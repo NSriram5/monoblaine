@@ -1,0 +1,97 @@
+:root{
+    --bg-main-color:#355691;
+    --light-font-color: #dddddd;
+    --tray-color: #3F4045;
+    --black-coffee: #30292F;
+    --independence:  #413F54;
+    --liberty: #5f5aa2;
+    --y-in-mn-blue: #355691;
+    --onyx: #3F4045;
+    --radius-size: 10px;
+    --standard-padding: 10px;
+    --standard-margin: 5px;
+    font-size: 25px;
+    font-family: 'Hind Madurai', sans-serif;
+}
+h1, h2{
+    margin: 0px;
+    padding: 0px;
+}
+h2{
+    padding-left: 25px;
+}
+#textarea{
+    background-color: aliceblue;
+    color: var(--onyx);
+    position: relative;
+    height: 200px;
+    width: 700px;
+    font-size: .7em;
+    border-radius: var(--radius-size);
+    margin: 5px;
+    padding: 10px;
+}
+.panel{
+    background-color: var(--tray-color);
+    color: var(--light-font-color);
+    border-radius: var(--radius-size);
+    padding: var(--standard-padding);
+    margin: var(--standard-margin);
+    display: flex;
+    flex-direction: column;
+    flex-grow:1;
+    flex-basis: 200px;
+}
+body{
+    display: flex;
+    flex-direction: row;
+    background-color: var(--y-in-mn-blue);
+}
+label{
+    flex-grow: 1;
+}
+#main-island{
+    margin: 0 auto;
+    padding: 20px;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+#top-command-bar{
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+}
+.flex-linebreak{
+    flex-basis: 100%;
+    height: 0px;
+}
+.button{
+    border-radius: var(--radius-size);
+    margin: var(--standard-margin);
+    padding: var(--standard-padding);
+    flex-grow: 0;
+
+}
+#go-button{
+    align-self: flex-end;
+    color: rgb(43, 43, 43);
+    background-color: yellow;
+}
+.empty{
+    flex-basis: 100px;
+    flex-grow: 4;
+}
+#close-button{
+    background-color: red;
+}
+#save-button{
+    background-color: seagreen;
+}
+#next-button{
+    background-color: #5f5aa2;
+}
+.logo-container{
+    font-family: 'Itim', cursive;
+    font-size: 2em;    
+}
