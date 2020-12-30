@@ -1,0 +1,195 @@
+{% extends "base.html" %} {% block title %} {% endblock %} {% block navigation_buttons %} {% endblock %} {% block nav_message %} Welcome {% endblock %} {% block login_status %}Logged in{% endblock %} {% block content %}
+<div class="d-flex flex-row w-75 mx-auto">
+    <div id="nugget" data-id="" class="w-75" contenteditable=""><span class="candidate-word" id="clump-0">Bears</span><span class="grammar" id="clump-1"> </span><span class="candidate-word" id="clump-2">hibernate</span><span class="grammar" id="clump-3"> </span><span class="candidate-word" id="clump-4">in</span>
+        <span class="grammar" id="clump-5"> </span><span class="candidate-word" id="clump-6">the</span><span class="grammar" id="clump-7"> </span><span class="candidate-word" id="clump-8">winter</span><span class="grammar" id="clump-9">.</span></div>
+    <div id="keywordingpanel" class="w-25">
+        <div id="manualKwEntry">
+            <div class="ui-widget">
+                <label for="kwEntry"></label>
+                <input class="" type="text" name="kwEntry" id="kwEntry">
+            </div>
+            <button id="checkAddKwEntry" class="btn btn-primary btn-block btn-lg my-3">
+            Add
+        </button>
+            <span id="errKwEntry">
+
+        </span>
+        </div>
+        <div id="KwList">
+
+            <span class="validKeyword badge bg-secondary"><span class="wordContent">Bears</span><button class="btn-close btn-close-white" type="button" aria-label="Close"></button><span class="partOfSpeech"></span><span class="instanceCount ms-2" data-loc="0">1x</span></span>
+            <span class="validKeyword badge bg-secondary"><span class="wordContent">hibernate</span><button class="btn-close btn-close-white" type="button" aria-label="Close"></button><span class="partOfSpeech"></span><span class="instanceCount ms-2"
+                data-loc="2">1x</span></span><span class="validKeyword badge bg-secondary"><span class="wordContent">winter</span>
+            <button class="btn-close btn-close-white" type="button" aria-label="Close"></button><span class="partOfSpeech"></span><span class="instanceCount ms-2" data-loc="8">1x</span></span>
+        </div>
+    </div>
+    <div id="hypernympanel">
+    </div>
+</div>
+<div id="suggestionspanel" class="mx-5">
+    <button id="suggestionsRefreshAll" class="btn btn-primary btn-block btn-lg my-3">
+        Suggest replacement words
+    </button>
+    <div class="row w=100" id="fakeout-suggestions">
+
+        <div class="card col-6" id="card-bears">
+            <div class="card-body">
+                <h3 class="card-title" data-instancescount="1x" data-loc="0">bears</h3>
+                <div class="d-flex flex-row flex-wrap">
+                    <div class="hypernym-box col-4">
+                        <ul class="hypernym h6"><u data-rel="CapableOf">fish for salmon</u><span class="hypernym-weight mx-2">2</span>
+                            <li class="fakeout">bear<i class="far fa-plus-square"></i></li>
+                        </ul>
+                    </div>
+                    <div class="hypernym-box col-4">
+                        <ul class="hypernym h6"><u data-rel="AtLocation">the woods</u><span class="hypernym-weight mx-2">2</span>
+                            <li class="fakeout">streams<i class="far fa-plus-square"></i></li>
+                            <li class="fakeout">koala<i class="far fa-plus-square"></i></li>
+                            <li class="fakeout">marmoset<i class="far fa-plus-square"></i></li>
+                            <li class="fakeout">apple tree<i class="far fa-plus-square"></i></li>
+                            <li class="fakeout">rosebush<i class="far fa-plus-square"></i></li>
+                        </ul>
+                    </div>
+                    <div class="hypernym-box col-4">
+                        <ul class="hypernym h6"><u data-rel="CapableOf">pick berries</u><span class="hypernym-weight mx-2">1</span>
+                            <li class="fakeout">Some birds<i class="far fa-plus-square"></i></li>
+                            <li class="fakeout">gardener<i class="far fa-plus-square"></i></li>
+                        </ul>
+                    </div>
+                    <div class="hypernym-box col-4">
+                        <ul class="hypernym h6"><u data-rel="CapableOf">kill humans</u><span class="hypernym-weight mx-2">1</span>
+                            <li class="fakeout">Carbon monoxide<i class="far fa-plus-square"></i></li>
+                            <li class="fakeout">poison<i class="far fa-plus-square"></i></li>
+                        </ul>
+                    </div>
+                </div>
+            </div><button class="btn-close position-absolute top-0 end-0" type="button" aria-label="Close"></button></div>
+        <div class="card col-6" id="card-hibernate">
+            <div class="card-body">
+                <h3 class="card-title" data-instancescount="1x" data-loc="2">hibernate</h3>
+                <div class="d-flex flex-row flex-wrap">
+                    <div class="hypernym-box col-4">
+                        <ul class="hypernym h6"><u data-rel="MannerOf">sleep</u><span class="hypernym-weight mx-2">2</span>
+                            <li class="fakeout">sleep late<i class="far fa-plus-square"></i></li>
+                            <li class="fakeout">bundle<i class="far fa-plus-square"></i></li>
+                            <li class="fakeout">nap<i class="far fa-plus-square"></i></li>
+                            <li class="fakeout">estivate<i class="far fa-plus-square"></i></li>
+                        </ul>
+                    </div>
+                </div>
+            </div><button class="btn-close position-absolute top-0 end-0" type="button" aria-label="Close"></button></div>
+        <div class="card col-6" id="card-winter">
+            <div class="card-body">
+                <h3 class="card-title" data-instancescount="1x" data-loc="8">winter</h3>
+                <div class="d-flex flex-row flex-wrap">
+                    <div class="hypernym-box col-4">
+                        <ul class="hypernym h6"><u data-rel="MannerOf">spend</u><span class="hypernym-weight mx-2">2</span>
+                            <li class="fakeout">vacation<i class="far fa-plus-square"></i></li>
+                            <li class="fakeout">summer<i class="far fa-plus-square"></i></li>
+                            <li class="fakeout">weekend<i class="far fa-plus-square"></i></li>
+                            <li class="fakeout">soldier<i class="far fa-plus-square"></i></li>
+                            <li class="fakeout">sojourn<i class="far fa-plus-square"></i></li>
+                        </ul>
+                    </div>
+                    <div class="hypernym-box col-4">
+                        <ul class="hypernym h6"><u data-rel="CapableOf">make you depressed</u><span class="hypernym-weight mx-2">1</span>
+                            <li class="fakeout">losing a game<i class="far fa-plus-square"></i></li>
+                        </ul>
+                    </div>
+                    <div class="hypernym-box col-4">
+                        <ul class="hypernym h6"><u data-rel="IsA">a season of the year</u><span class="hypernym-weight mx-2">1</span>
+                            <li class="fakeout">spring<i class="far fa-plus-square"></i></li>
+                        </ul>
+                    </div>
+                    <div class="hypernym-box col-4">
+                        <ul class="hypernym h6"><u data-rel="IsA">calendar season</u><span class="hypernym-weight mx-2">1</span>
+                            <li class="fakeout">summer<i class="far fa-plus-square"></i></li>
+                            <li class="fakeout">spring<i class="far fa-plus-square"></i></li>
+                            <li class="fakeout">autumn<i class="far fa-plus-square"></i></li>
+                        </ul>
+                    </div>
+                </div>
+            </div><button class="btn-close position-absolute top-0 end-0" type="button" aria-label="Close"></button></div>
+    </div>
+</div>
+<div id="fakeoutpanel" class="mx-5">
+    <input type="text" name="typedNewFakeoutKw" id="typedNewFakeoutKw">
+    <input type="text" name="typedNewFakeoutWd" id="typedNewFakeoutWd">
+    <button id="checkAddFakeoutEntry" class="btn btn-primary btn-block btn-lg my-3">
+        Add
+    </button>
+    <span id="errFakeoutEntry">
+
+    </span>
+    <div id="finalizedfakeouts" class="row w-100">
+
+
+
+
+
+
+        <div class="finishedFakeout card col-2" data-keyword="bears" data-fakeoutword="Some birds" data-hypernym="pick berries" data-instancescount="1x" data-relationship="CapableOf" data-loc="0">
+            <div class="card-body">
+                <p class="card-text mb-0">Replace bears with Some birds</p>
+                <p class="card-text mb-0">Shared concept is pick berries</p>
+                <p class="card-text mb-0">1x</p>
+                <p class="card-text mb-0">Shared relationship: CapableOf</p>
+            </div><button class="btn-close position-absolute top-0 end-0" type="button" aria-label="Close"></button></div>
+        <div class="finishedFakeout card col-2" data-keyword="hibernate" data-fakeoutword="sleep late" data-hypernym="sleep" data-instancescount="1x" data-relationship="MannerOf" data-loc="2">
+            <div class="card-body">
+                <p class="card-text mb-0">Replace hibernate with sleep late</p>
+                <p class="card-text mb-0">Shared concept is sleep</p>
+                <p class="card-text mb-0">1x</p>
+                <p class="card-text mb-0">Shared relationship: MannerOf</p>
+            </div><button class="btn-close position-absolute top-0 end-0" type="button" aria-label="Close"></button></div>
+        <div class="finishedFakeout card col-2" data-keyword="winter" data-fakeoutword="summer" data-hypernym="spend" data-instancescount="1x" data-relationship="MannerOf" data-loc="8">
+            <div class="card-body">
+                <p class="card-text mb-0">Replace winter with summer</p>
+                <p class="card-text mb-0">Shared concept is spend</p>
+                <p class="card-text mb-0">1x</p>
+                <p class="card-text mb-0">Shared relationship: MannerOf</p>
+            </div><button class="btn-close position-absolute top-0 end-0" type="button" aria-label="Close"></button></div>
+        <div class="finishedFakeout card col-2" data-keyword="winter" data-fakeoutword="spring" data-hypernym="a season of the year" data-instancescount="1x" data-relationship="IsA" data-loc="8">
+            <div class="card-body">
+                <p class="card-text mb-0">Replace winter with spring</p>
+                <p class="card-text mb-0">Shared concept is a season of the year</p>
+                <p class="card-text mb-0">1x</p>
+                <p class="card-text mb-0">Shared relationship: IsA</p>
+            </div><button class="btn-close position-absolute top-0 end-0" type="button" aria-label="Close"></button></div>
+        <div class="finishedFakeout card col-2" data-keyword="winter" data-fakeoutword="autumn" data-hypernym="calendar season" data-instancescount="1x" data-relationship="IsA" data-loc="8">
+            <div class="card-body">
+                <p class="card-text mb-0">Replace winter with autumn</p>
+                <p class="card-text mb-0">Shared concept is calendar season</p>
+                <p class="card-text mb-0">1x</p>
+                <p class="card-text mb-0">Shared relationship: IsA</p>
+            </div><button class="btn-close position-absolute top-0 end-0" type="button" aria-label="Close"></button></div>
+    </div>
+    <button id="exampleQuestions" class="btn btn-primary btn-block btn-lg my-3">See Example Questions</button>
+</div>
+<div id="questions" class="w-75 mx-auto">
+
+</div>
+
+<div id="statistics" class="w-75 mx-auto">
+
+</div>
+<div id="finalize" class="mx-5">
+    <select name="targetDeck" id="targetDeck">
+        <option value=""></option>
+    </select>
+    <button id="addToDeck" class="btn btn-success btn-block btn-lg my-3">Add to Deck</button>
+    <div id="saveToDecks"><span class="deckAdd badge bg-success" id="3">Squid<button class="btn-close btn-close-white" type="button" aria-label="Close"></button></span><span class="deckAdd badge bg-success" id="2">Flying bird<button class="btn-close btn-close-white" type="button" aria-label="Close"></button></span></div>
+    <form method="post" id="newnugget_form">
+        {{ form.hidden_tag() }}
+        <button type="submit" id="saveMe" class="btn btn-primary btn-block btn-lg my-3">Save and close</button>
+        <span id="errSaveandClose">
+
+        </span>
+    </form>
+
+</div>
+
+{% endblock %} {% block tailscripts %}
+<script src="https://unpkg.com/axios/dist/axios.js"></script>
+<script src="/static/nuggetcontrol.js"></script>
+{% endblock %}

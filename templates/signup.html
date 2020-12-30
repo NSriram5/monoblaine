@@ -1,0 +1,18 @@
+{% extends "base.html" %} {% block title %} {% endblock %} {% block navigation_buttons %} {% endblock %} {% block nav_message %} Welcome {% endblock %} {% block login_status %}Logged in{% endblock %} {% block content %}
+<div class="card wd-75 mx-auto" id="loginprompt">
+    <h2>Join Monoblain today.</h2>
+    <form method="post" id="newuser_form">
+        {{ form.hidden_tag() }} {% for field in form if field.widget.input_type != 'hidden' %} {% for error in field.errors %}
+        <span class="text-danger">{{ error }}</span> {% endfor %} {{ field(placeholder=field.label.text, class="form-control") }} {% endfor %}
+        <button class="btn btn-primary btn-block btn-lg">Create</button>
+        <a href="/" class="btn btn-success btn-block btn-lg">Cancel</a>
+    </form>
+</div>
+<div class="card wd-50 max-auto" id="publiccollections">
+
+</div>
+
+{% endblock %} {% block tailscripts %}
+<script src="https://unpkg.com/axios/dist/axios.js"></script>
+<script src="/static/nuggetcontrol.js"></script>
+{% endblock %}

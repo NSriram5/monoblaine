@@ -1,0 +1,60 @@
+{% extends "base.html" %} {% block title %} {% endblock %} {% block navigation_buttons %} {% endblock %} {% block nav_message %} Welcome {% endblock %} {% block login_status %}Logged in{% endblock %} {% block content %}
+<div class="flash">
+    {% for category, message in get_flashed_messages(with_categories=True) %}
+    <div class="alert alert-{{ category }}">{{ message }}</div>
+    {% endfor %}
+</div>
+<div class="d-flex flex-row">
+    <div class="row w-50 mx-auto" id="myDecks">
+        <h2>My Decks</h2>
+        {% for deck in g.user.decks %}
+
+        <div class="card col-4">
+            <a href="/decks/view/{{deck.id}}">
+                <div class="card-body">
+                    <h3>{{deck.name}}</h3>
+                    <p>{{deck.description}}</p>
+                </div>
+                <form class="position-absolute top-0 end-0" action="/decks/{{deck.id}}/delete" method="post">
+                    <button type="submit" class="btn-close " type="button" aria-label="Close"></button>
+                </form>
+            </a>
+        </div>
+        {% endfor %}
+
+    </div>
+
+    <div class="row w-50 mx-auto" id="myNuggets">
+        <h2>My nuggets</h2>
+        {% for nugget in g.user.nuggets %}
+        <div class="card col-6">
+            <a href="/nuggets/view/{{nugget.id}}">
+                <div class="card-body">
+                    <h6>{{nugget.truth}}</h6>
+                </div>
+                <form class="position-absolute top-0 end-0" action="/nuggets/{{nugget.id}}/delete" method="post">
+                    <button type="submit" class="btn-close " type="button" aria-label="Close"></button>
+                </form>
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+
+</div>
+<div class="card w-25 mx-auto" id="buttons">
+    <a href="/decks/create" class="btn btn-primary btn-block btn-lg my-3" id="createDeck">
+        Create New Collection
+    </a>
+    <a href="/nuggets/create" class="btn btn-primary btn-block btn-lg my-3" id="createNugget">
+        Create New Nugget
+    </a>
+</div>
+
+<div class="card wd-50 max-auto" id="publiccollections">
+
+</div>
+
+{% endblock %} {% block tailscripts %}
+<script src="https://unpkg.com/axios/dist/axios.js"></script>
+
+{% endblock %}

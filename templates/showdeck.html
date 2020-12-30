@@ -1,0 +1,34 @@
+{% extends "base.html" %} {% block title %} {% endblock %} {% block navigation_buttons %} {% endblock %} {% block nav_message %} Welcome {% endblock %} {% block login_status %}Logged in{% endblock %} {% block content %}
+<div class="flash">
+    {% for category, message in get_flashed_messages(with_categories=True) %}
+    <div class="alert alert-{{ category }}">{{ message }}</div>
+    {% endfor %}
+</div>
+<div class="deck-title w-50 mx-auto text-center">
+    <h1>{{deck.name}}</h1>
+</div>
+<div class="deck-description w-75 mx-auto">
+    <h4>{{deck.description}}</h4>
+</div>
+<div class="mx-auto w-25">
+    <button class="btn btn-success btn-block btn-lg">Take quiz</button>
+</div>
+<div class="nugget-list w-75 mx-auto">
+    <h6>nuggets in deck</h6>
+    {% for nugget in deck.my_nuggets %}
+    <a href="/nuggets/view/{{nugget.id}}">
+        <p>{{nugget.truth}}</p>
+    </a>
+    {% endfor %}
+</div>
+<div class="collaborator-list w-25 mx-auto">
+    <h6>Collaboratoring Users</h6>
+    {% for user in deck.my_users %}
+    <p>{{user.username}}</p>
+    {% endfor %}
+</div>
+
+{% endblock %} {% block tailscripts %}
+<script src="https://unpkg.com/axios/dist/axios.js"></script>
+
+{% endblock %}

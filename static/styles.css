@@ -1,0 +1,48 @@
+:root {
+    --bg-main-color: #355691;
+    --light-font-color: #dddddd;
+    --tray-color: #3F4045;
+    --black-coffee: #30292F;
+    --independence: #413F54;
+    --liberty: #5f5aa2;
+    --y-in-mn-blue: #355691;
+    --onyx: #3F4045;
+    --radius-size: 10px;
+    --standard-padding: 10px;
+    --standard-margin: 5px;
+    font-size: 14px;
+    font-family: 'Hind Madurai', sans-serif;
+    --icon-font: 'Itim', cursive
+}
+
+div {
+    padding: 1px;
+    border: solid 1px #909090
+}
+
+.candidate-word {
+    background: rgb(126, 169, 170);
+}
+
+.candidate-word:hover {
+    background: rgb(194, 194, 149);
+}
+
+.fa-plus-square:hover {
+    font-weight: 900;
+}
+
+.card-body {
+    padding: 0rem 0rem;
+}
+
+.hypernym-box>ul {
+    padding-left: .75rem;
+    margin-block-start: 0.5em;
+    margin-block-end: 0.5em;
+    padding-inline-start: 20px;
+}
+
+li.fakeout>i {
+    padding-left: .5rem;
+}
