@@ -10,16 +10,18 @@ function digestNugget() {
     let wordArray = nugget.match(separateWordsRegEx);
     let clumpNum = 0;
     let candidateWords = [];
-    for (word of wordArray) {
-        if (wordMatchRegEx.test(word)) {
-            span = $("<span>").addClass("candidate-word").attr("id", `clump-${clumpNum}`).text(word);
-            $("#nugget").append(span)
-            candidateWords.push(word);
-        } else {
-            span = $("<span>").addClass("grammar").attr("id", `clump-${clumpNum}`).text(word);
-            $("#nugget").append(span)
+    if (wordArray) {
+        for (word of wordArray) {
+            if (wordMatchRegEx.test(word)) {
+                span = $("<span>").addClass("candidate-word").attr("id", `clump-${clumpNum}`).text(word);
+                $("#nugget").append(span)
+                candidateWords.push(word);
+            } else {
+                span = $("<span>").addClass("grammar").attr("id", `clump-${clumpNum}`).text(word);
+                $("#nugget").append(span)
+            }
+            clumpNum++;
         }
-        clumpNum++;
     }
     sessionStorage.setItem("candidateWords", candidateWords)
     $("#kwEntry").autocomplete({ source: candidateWords });
@@ -88,8 +90,14 @@ async function lookupAllFakeouts() {
         item = { "sWord": word.toLowerCase(), "partOfSpeech": part, "instanceCount": instanceCount, "loc": loc }
         searchWords.push(item);
     })
-    debugger;
+    for (keyword of searchWords) {
+        let spinDiv = $("<div>").addClass("col-6 spinner-border text-primary m-6").attr("role", "status");
+        let spinSpan = $("<span>").addClass("visually-hidden").text("Loading...");
+        spinDiv.append(spinSpan);
+        $("#fakeout-suggestions").append(spinDiv);
+    }
     let response = await axios.post("/get_fakeout", json = { "words": searchWords })
+    $("#fakeout-suggestions").empty();
     let fakeouts = response.data.fakeoutResults;
     for (keyword of fakeouts) {
         let label = keyword.text_word;
@@ -134,6 +142,7 @@ function handleAddKwBtn(e) {
 
 function handleAddFinishedFakeout(e) {
     e.preventDefault();
+    $('#errFakeoutEntry').text("");
     let kword = $('#typedNewFakeoutKw').val();
     let fword = $('#typedNewFakeoutWd').val();
     if (kword == "" && fword == "") {
@@ -296,15 +305,15 @@ function handlefakeoutsuggestionsclick(e) {
         let loc = targ.closest(".card-body").firstElementChild.dataset.loc;
         let displayCard = $("<div>").addClass("finishedFakeout card col-2");
         let cardText = $("<p>").addClass("card-text mb-0").text(`
-                                Replace $ { keyword }
-                                with $ { fakeout }
+                                Replace ${keyword}
+                                with ${fakeout}
                                 `);
         let hypernymText = $("<p>").addClass("card-text mb-0").text(`
-                                Shared concept is $ { hypernym }
+                                Shared concept is ${hypernym}
                                 `);
         let instances = $("<p>").addClass("card-text mb-0").text(instanceCount);
         let relationText = $("<p>").addClass("card-text mb-0").text(`
-                                Shared relationship: $ { relationship }
+                                Shared relationship: ${relationship}
                                 `);
         let clsButton = $("<button>").addClass("btn-close position-absolute top-0 end-0").attr({ "type": "button", "aria-label": "Close" });
         displayCard.append($("<div>").addClass("card-body").append(cardText).append(hypernymText).append(instances).append(relationText)).append(clsButton);

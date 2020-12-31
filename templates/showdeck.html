@@ -8,10 +8,12 @@
     <h1>{{deck.name}}</h1>
 </div>
 <div class="deck-description w-75 mx-auto">
-    <h4>{{deck.description}}</h4>
+    <h4>{{deck.description}}</h6>
 </div>
-<div class="mx-auto w-25">
-    <button class="btn btn-success btn-block btn-lg">Take quiz</button>
+<div class="text-center mx-auto w-25">
+    <a href="/decks/quiz/{{deck.id}}">
+        <button class="btn btn-success btn-block btn-lg">Take quiz</button>
+    </a>
 </div>
 <div class="nugget-list w-75 mx-auto">
     <h6>nuggets in deck</h6>

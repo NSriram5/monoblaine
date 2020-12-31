@@ -1,0 +1,31 @@
+{% extends "base.html" %} {% block title %} {% endblock %} {% block navigation_buttons %} {% endblock %} {% block nav_message %} Welcome {% endblock %} {% block login_status %}Logged in{% endblock %} {% block content %}
+<div class="flash">
+    {% for category, message in get_flashed_messages(with_categories=True) %}
+    <div class="alert alert-{{ category }}">{{ message }}</div>
+    {% endfor %}
+</div>
+{% set ans_flag = {0:"A",1:"B",2:"C",3:"D"}%}
+<div id="quiz-questions" class="w-75 mx-auto">
+    {% for question in quiz %} {% set i = loop.index %}
+    <div class="question-frame-{{loop.index}}" data-correct-answer="{{question['correct_answer']|e}}">
+        <div class="prompt">
+            {{question["prompt"]}}
+        </div>
+        {% if question["stripped_nugget"]!=""%}
+        <div class="question-body">
+            {{question["stripped_nugget"]}}
+        </div>
+        {% endif %}
+        <div class="answers">
+            {% for answer in question["answer_list"]%} {% set j = loop.index %}
+            <input type="radio" name="question-{{i}}" id="{{i}}-{{answer|e}}" value="{{answer|e}}">
+            <label for="{{loop.index}}-{{answer|e}}">{{loop.cycle('A','B','C','D')}}. {{answer|e}}</label>
+            <br> {% endfor %}
+            </select>
+        </div>
+    </div>{% endfor %}
+</div>
+<button>Check Answers</button> {% endblock %} {% block tailscripts %}
+<script src="https://unpkg.com/axios/dist/axios.js"></script>
+<script src="static/runquiz.js"></script>
+{% endblock %}
