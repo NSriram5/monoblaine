@@ -27,6 +27,7 @@ def make_quiz(deck):
             #There are enough features in this nugget to make a "which is true?" mc question
             questions = make_which_is_true_question([nugget])
             finished_questions = finished_questions + questions
+            incoming_nuggets.remove(nugget)
         safety = safety - 1
         if safety<1:
             import pdb; pdb.set_trace()

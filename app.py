@@ -21,7 +21,7 @@ app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', "it's a secret")
 toolbar = DebugToolbarExtension(app)
 
 connect_db(app)
-import seed
+#import seed
 
 @app.before_request
 def add_user_to_g():
@@ -128,7 +128,8 @@ def seeblanknuggetscreen():
             db.session.commit()
         flash("You have created a new nugget")
         return redirect("/")
-    return render_template('nuggetenter.html',form=form)
+    return render_template('/nuggetviewcontrol.html',form=form,nugget=None, decks = None)
+    #return render_template('nuggetenter.html',form=form)
 
 @app.route('/nuggets/view/<int:nugget_id>',methods=["GET","POST"])
 def seepopulatednuggetscreen(nugget_id):
@@ -149,7 +150,7 @@ def seepopulatednuggetscreen(nugget_id):
         new_keywords = []
         for input_keyword in submitted_info.get("Keywords"):
             loc = input_keyword.get("loc")
-            if loc == 'None':
+            if loc == 'None' or loc == '':
                 loc = None
             else:
                 loc = int(loc)
@@ -166,6 +167,13 @@ def seepopulatednuggetscreen(nugget_id):
                 new_keywords.append((keyword.word,keyword.place_in_sentence))
                 db.session.add(keyword)
                 db.session.commit()
+                for input_fakeout in input_keyword.get("fakeouts"):
+                    fakeout = Fakeout(fake_word = input_fakeout.get("text"),
+                                            hypernym = input_fakeout.get("hypernym"),
+                                            relationship = input_fakeout.get("relationship"),
+                                            my_keyword_id = keyword.id)
+                    db.session.add(fakeout)
+                    db.session.commit()
             else:
                 if loc == None:
                     keyword = Keyword.query.filter_by(word = input_keyword.get("text"),instance_count = input_keyword.get("instanceCount")).first()
@@ -219,7 +227,7 @@ def seepopulatednuggetscreen(nugget_id):
         flash("You have updated a nugget")
         return redirect("/")
     
-    return render_template('/nuggetviewcontrol.html',nugget=nugget,form=form)
+    return render_template('/nuggetviewcontrol.html',nugget=nugget,form=form, decks = nugget.my_decks)
 
 @app.route('/decks/create',methods=["GET","POST"])
 def create_deck():
@@ -256,7 +264,7 @@ def run_quiz(deck_id):
         return redirect("/")
     deck = Deck.query.get(deck_id)
     quiz = make_quiz(deck)
-    return render_template('viewquiz.html',quiz=quiz)
+    return render_template('viewquiz.html',quiz=quiz,deck_id=deck_id)
 
 
 

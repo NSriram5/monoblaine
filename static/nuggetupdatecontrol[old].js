@@ -132,8 +132,12 @@ function handleAddKwBtn(e) {
     addKeyword();
 }
 
-function handleAddFinishedFakeout(e) {
+function handleClickAddFakeoutButton(e) {
     e.preventDefault();
+    addFinishedFakeout();
+}
+
+function addFinishedFakeout() {
     let kword = $('#typedNewFakeoutKw').val();
     let fword = $('#typedNewFakeoutWd').val();
     if (kword == "" && fword == "") {
@@ -323,12 +327,19 @@ function handlekwdkeypress(e) {
     }
 }
 
+function fkwordKeyPress(e) {
+    if ((e.which && e.which == 13) || (e.keyCode && e.keyCode == 13)) {
+        addFinishedFakeout();
+    }
+}
+
 $(function() {
     digestNugget();
     loadDeckChoices();
     $("#nugget").focusout(digestNugget);
     $("#checkAddKwEntry").click(handleAddKwBtn);
-    $("#checkAddFakeoutEntry").click(handleAddFinishedFakeout);
+    $("#checkAddFakeoutEntry").click(handleClickAddFakeoutButton);
+    $("#typedNewFakeoutWd").keypress(handleAddFinishedFakeout);
     $("#kwEntry").keypress(handlekwdkeypress);
     $("#suggestionsRefreshAll").click(handleFakeOutRefreshAllBtn);
     $("#KwList").click(handleKwlistclick);

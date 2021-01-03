@@ -1,5 +1,6 @@
 from app import db
 from models import User, Deck, Nugget, Keyword, Fakeout
+from sqlalchemy import text
 
 db.drop_all()
 db.create_all()

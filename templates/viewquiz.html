@@ -4,10 +4,11 @@
     <div class="alert alert-{{ category }}">{{ message }}</div>
     {% endfor %}
 </div>
+<div class="mx-auto mt-5 text-center h2">A randomly generated quiz!</div>
 {% set ans_flag = {0:"A",1:"B",2:"C",3:"D"}%}
 <div id="quiz-questions" class="w-75 mx-auto">
     {% for question in quiz %} {% set i = loop.index %}
-    <div class="question-frame-{{loop.index}}" data-correct-answer="{{question['correct_answer']|e}}">
+    <div class="question-frame mb-5" data-correct-answer="{{question['correct_answer']|e}}">
         <div class="prompt">
             {{question["prompt"]}}
         </div>
@@ -25,7 +26,10 @@
         </div>
     </div>{% endfor %}
 </div>
-<button>Check Answers</button> {% endblock %} {% block tailscripts %}
+<div class="mx-auto text-center h2">
+    <button id="checkanswer-btn" class="btn btn-success">Check Answers</button>
+    <a href="/decks/view/{{deck_id}}"><button id="return-home" class="btn btn-primary">Return to deck</button></a>
+</div> {% endblock %} {% block tailscripts %}
 <script src="https://unpkg.com/axios/dist/axios.js"></script>
-<script src="static/runquiz.js"></script>
+<script src="/static/runquiz.js"></script>
 {% endblock %}

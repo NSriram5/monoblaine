@@ -1,6 +1,6 @@
 //const separateWordsRegEx = /(\w|'|-)+|(\W)+/gmu;
 const separateWordsRegEx = /([^\s\(]*\S*[^\s.,\)])|(\)*\W\(*)/gm;
-const wordMatchRegEx = /(\w|'|-)+/g;
+const wordMatchRegEx = /(\w|'|-)+/;
 
 
 function digestNugget() {
@@ -23,8 +23,9 @@ function digestNugget() {
             clumpNum++;
         }
     }
-    sessionStorage.setItem("candidateWords", candidateWords)
+    sessionStorage.setItem("candidateWords", candidateWords);
     $("#kwEntry").autocomplete({ source: candidateWords });
+    $("#typedNewFakeoutKw").autocomplete({ source: candidateWords });
     return;
 }
 
@@ -140,9 +141,12 @@ function handleAddKwBtn(e) {
     addKeyword();
 }
 
-function handleAddFinishedFakeout(e) {
+function handleClickAddFakeoutButton(e) {
     e.preventDefault();
-    $('#errFakeoutEntry').text("");
+    addFinishedFakeout();
+}
+
+function addFinishedFakeout() {
     let kword = $('#typedNewFakeoutKw').val();
     let fword = $('#typedNewFakeoutWd').val();
     if (kword == "" && fword == "") {
@@ -160,12 +164,12 @@ function handleAddFinishedFakeout(e) {
     } else if (!checkIfKwordInList(kword)) {
         makeAppendKwBadge(kword);
     }
-    $('#typedNewFakeoutKw').val("");
+    //$('#typedNewFakeoutKw').val("");
     $('#typedNewFakeoutWd').val("");
     let instanceCount = "All";
     let displayCard = $("<div>").addClass("finishedFakeout card col-2");
-    let cardText = $("<p>").addClass("card-text mb-0").text(`Replace ${kword} with ${fword}`);
-    let instances = $("<p>").addClass("card-text mb-0").text(instanceCount);
+    let cardText = $("<div>").addClass("card-text mb-0 mr-2").text(`Replace ${kword} with ${fword}`);
+    let instances = $("<div>").addClass("card-text mb-0").text(instanceCount);
     let clsButton = $("<button>").addClass("btn-close position-absolute top-0 end-0").attr({ "type": "button", "aria-label": "Close" });
     displayCard.append($("<div>").addClass("card-body").append(cardText).append(instances)).append(clsButton);
     displayCard.attr("data-keyword", kword);
@@ -304,15 +308,15 @@ function handlefakeoutsuggestionsclick(e) {
         let instanceCount = targ.closest(".card-body").firstElementChild.dataset.instancescount;
         let loc = targ.closest(".card-body").firstElementChild.dataset.loc;
         let displayCard = $("<div>").addClass("finishedFakeout card col-2");
-        let cardText = $("<p>").addClass("card-text mb-0").text(`
+        let cardText = $("<div>").addClass("card-text mb-0 mr-2").text(`
                                 Replace ${keyword}
                                 with ${fakeout}
                                 `);
-        let hypernymText = $("<p>").addClass("card-text mb-0").text(`
+        let hypernymText = $("<div>").addClass("card-text mb-0").text(`
                                 Shared concept is ${hypernym}
                                 `);
-        let instances = $("<p>").addClass("card-text mb-0").text(instanceCount);
-        let relationText = $("<p>").addClass("card-text mb-0").text(`
+        let instances = $("<div>").addClass("card-text mb-0").text(instanceCount);
+        let relationText = $("<div>").addClass("card-text mb-0").text(`
                                 Shared relationship: ${relationship}
                                 `);
         let clsButton = $("<button>").addClass("btn-close position-absolute top-0 end-0").attr({ "type": "button", "aria-label": "Close" });
@@ -340,12 +344,19 @@ function handlekwdkeypress(e) {
     }
 }
 
+function fkwordKeyPress(e) {
+    if ((e.which && e.which == 13) || (e.keyCode && e.keyCode == 13)) {
+        addFinishedFakeout();
+    }
+}
+
 $(function() {
     digestNugget();
     loadDeckChoices();
     $("#nugget").focusout(digestNugget);
     $("#checkAddKwEntry").click(handleAddKwBtn);
-    $("#checkAddFakeoutEntry").click(handleAddFinishedFakeout);
+    $("#checkAddFakeoutEntry").click(handleClickAddFakeoutButton);
+    $("#typedNewFakeoutWd").keypress(fkwordKeyPress);
     $("#kwEntry").keypress(handlekwdkeypress);
     $("#suggestionsRefreshAll").click(handleFakeOutRefreshAllBtn);
     $("#KwList").click(handleKwlistclick);

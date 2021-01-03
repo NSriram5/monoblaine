@@ -36,7 +36,7 @@ class Keyword(db.Model):
     my_fakeouts = db.relationship('Fakeout')
 
 class Fakeout(db.Model):
-    """Fakeout words"""
+    """Fasqlkeout words"""
     __tablename__="fakeout"
     id = db.Column(db.Integer,primary_key=True)
     fake_word = db.Column(db.Text,nullable=False)

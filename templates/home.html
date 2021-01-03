@@ -1,18 +1,19 @@
-{% extends "base.html" %} {% block title %} {% endblock %} {% block navigation_buttons %} {% endblock %} {% block nav_message %} Welcome {% endblock %} {% block login_status %}Logged in{% endblock %} {% block content %}
+{% extends "loggedin-base.html" %} {% block title %} {% endblock %}{% block content %}
 <div class="flash">
     {% for category, message in get_flashed_messages(with_categories=True) %}
     <div class="alert alert-{{ category }}">{{ message }}</div>
     {% endfor %}
 </div>
-<div class="d-flex flex-row">
+<div class="d-flex flex-row mx-5">
     <div class="row w-50 mx-auto" id="myDecks">
-        <h2>My Decks</h2>
+        <div class="h2">My Decks</div>
         {% for deck in g.user.decks %}
 
         <div class="card col-4">
             <a href="/decks/view/{{deck.id}}">
                 <div class="card-body">
-                    <h3>{{deck.name}}</h3>
+                    <div class="h5 mr-2">
+                        {{deck.name}}</div>
                     <p>{{deck.description}}</p>
                 </div>
                 <form class="position-absolute top-0 end-0" action="/decks/{{deck.id}}/delete" method="post">
@@ -21,13 +22,12 @@
             </a>
         </div>
         {% endfor %}
-
     </div>
 
     <div class="row w-50 mx-auto" id="myNuggets">
-        <h2>My nuggets</h2>
+        <div class="h2">My nuggets</div>
         {% for nugget in g.user.nuggets %}
-        <div class="card col-6">
+        <div class="card col-12">
             <a href="/nuggets/view/{{nugget.id}}">
                 <div class="card-body">
                     <h6>{{nugget.truth}}</h6>

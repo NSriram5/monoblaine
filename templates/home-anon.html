@@ -1,4 +1,4 @@
-{% extends "base.html" %} {% block title %} {% endblock %} {% block navigation_buttons %} {% endblock %} {% block nav_message %} Welcome {% endblock %} {% block login_status %}Logged in{% endblock %} {% block content %}
+{% extends "base.html" %} {% block title %} {% endblock %} {% block navigation_buttons %} {% endblock %} {% block nav_message %} {% endblock %} {% block login_status %}{% endblock %} {% block content %}
 <div class="flash">
     {% for category, message in get_flashed_messages(with_categories=True) %}
     <div class="alert alert-{{ category }}">{{ message }}</div>
@@ -18,5 +18,4 @@
 
 {% endblock %} {% block tailscripts %}
 <script src="https://unpkg.com/axios/dist/axios.js"></script>
-<script src="/static/nuggetcontrol.js"></script>
 {% endblock %}
