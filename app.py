@@ -4,7 +4,7 @@ from flask import Flask, render_template, request, jsonify, flash, redirect, ses
 from flask_debugtoolbar import DebugToolbarExtension
 from sqlalchemy.exc import IntegrityError
 from models import db, connect_db, Nugget, Keyword, Fakeout, Question, Quiz, Deck, JoinDeckQuestion, JoinDeckQuiz, JoinDeckNugget, User
-from forms import UserAddForm, LoginForm, CreateDeckForm, CreateNuggetForm
+from forms import UserAddForm, LoginForm, CreateDeckForm, CreateNuggetForm, AddUserCollaborator
 from cohyponym import find_strong_cohyponyms, do_requests
 from quizmaker import make_quiz
 
@@ -299,13 +299,24 @@ def create_deck():
         return redirect("/")
     return render_template('/createdeck.html',form=form)
 
-@app.route('/decks/view/<int:deck_id>')
+@app.route('/decks/view/<int:deck_id>',methods=["POST","GET"])
 def view_deck(deck_id):
     deck = Deck.query.get(deck_id)
     if not g.user:
         flash("Access unauthorized.","danger")
         return redirect("/")
-    return render_template('showdeck.html',deck=deck)
+    formadduser = AddUserCollaborator()
+    access_control = "Visitor"
+    if deck in g.user.decks:
+        access_control = "Admin"
+    if g.user in deck.my_users:
+        access_control = "Collaborator"
+    if formadduser.validate_on_submit():
+        collab_user = User.query.filter_by(username=formadduser.username.data.lower()).first()
+        deck.my_users.append(collab_user)
+        db.session.commit()
+
+    return render_template('showdeck.html',deck=deck,form=formadduser, access_control = access_control)
 
 @app.route('/decks/quiz/<int:deck_id>')
 def run_quiz(deck_id):
@@ -334,7 +345,7 @@ def delete_deck(deck_id):
 
 @app.route('/nuggets/<int:nugget_id>/delete',methods=["POST"])
 def delete_nugget(nugget_id):
-    """Delete a deck."""
+    """Delete a nugget."""
 
     if not g.user:
         flash("Access unauthorized.","danger")

@@ -21,3 +21,7 @@ class CreateDeckForm(FlaskForm):
 
 class CreateNuggetForm(FlaskForm):
     """Form so that nuggets aren't made by a malicious user"""
+
+class AddUserCollaborator(FlaskForm):
+    """Form for adding users to collaborate on a deck"""
+    username = StringField('Username',validators=[DataRequired()])

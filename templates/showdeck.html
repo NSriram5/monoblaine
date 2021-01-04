@@ -12,10 +12,10 @@
 </div>
 <div class="text-center mx-auto w-25">
     <a href="/decks/quiz/{{deck.id}}">
-        <button class="btn btn-success btn-block btn-lg">Take quiz</button>
+        <button class="btn btn-success my-3 btn-block btn-lg">Take quiz</button>
     </a>
 </div>
-<div class="nugget-list w-75 mx-auto">
+<div class="nugget-list w-75 mx-auto px-3 py-2 border">
     <div class="d-inline h6">
         nuggets in deck
     </div>
@@ -28,12 +28,20 @@
     </div>
     {% for nugget in deck.my_nuggets %}
     <a href="/nuggets/view/{{nugget.id}}">
-        <p>{{nugget.truth}}</p>
+        <div class="block border-bottom p-2">
+            {{nugget.truth}}</div>
     </a>
     {% endfor %}
 </div>
 <div class="collaborator-list w-25 mx-auto">
     <h6>Collaboratoring Users</h6>
+    <form class="w-100" method="post" id="addcollab_user">
+        {{ form.hidden_tag() }} {% for field in form if field.widget.input_type != 'hidden' %} {% for error in field.errors %}
+        <span class="text-danger">{{error}}</span> {% endfor %} {{ field (placeholder=field.label.text, class="form-control w-50 d-inline") }} {% endfor %}
+        <div class="d-inline">
+            <button class="btn btn-success" type="submit">Attach User</button>
+        </div>
+    </form>
     {% for user in deck.my_users %}
     <p>{{user.username}}</p>
     {% endfor %}

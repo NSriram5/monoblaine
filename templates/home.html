@@ -30,11 +30,12 @@
         <div class="col-12">
             <a href="/nuggets/view/{{nugget.id}}">
                 <div class="card-body">
-                    <h6>{{nugget.truth}}</h6>
+                    <div class="h6 w-75 d-inline">{{nugget.truth}}</div>
+                    <form class="d-inline" action="/nuggets/{{nugget.id}}/delete" method="post">
+                        <button type="submit" class="btn-close " type="button" aria-label="Close"></button>
+                    </form>
                 </div>
-                <form class="position-absolute top-0 end-0" action="/nuggets/{{nugget.id}}/delete" method="post">
-                    <button type="submit" class="btn-close " type="button" aria-label="Close"></button>
-                </form>
+
             </a>
         </div>
         {% endfor %}
