@@ -54,7 +54,7 @@ function checkIfWordInNugget(word) {
 function addKeyword() {
     $("#errKwEntry").text("")
     let word = $("#kwEntry").val();
-    let found = checkIfKwordInNugget(word);
+    let found = checkIfWordInNugget(word);
     let placement = "";
     if (!found) {
         //The word isn't in the nugget

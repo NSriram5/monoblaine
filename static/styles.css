@@ -1,9 +1,12 @@
 :root {
-    --bg-main-color: #355691;
-    --light-font-color: #dddddd;
-    --tray-color: #3F4045;
-    --black-coffee: #30292F;
-    --independence: #413F54;
+    --dark-liver: #52414C;
+    --green-ebony: #596157;
+    --bs-primary: #596157;
+    --middle-green: #5B8C5A;
+    --bs-success: #5B8C5A;
+    --khaki-lightkhaki: #cfd186;
+    --fire-opal: #E3655B;
+    --bs-danger: #E3655B;
     --liberty: #5f5aa2;
     --y-in-mn-blue: #355691;
     --onyx: #3F4045;
@@ -15,9 +18,45 @@
     --icon-font: 'Itim', cursive
 }
 
+.btn-primary {
+    background-color: var(--bs-primary);
+    border-color: var(--bs-primary);
+}
+
+.btn-primary:hover {
+    background-color: var(--middle-green);
+    border-color: var(--middle-green);
+}
+
+.btn-success {
+    background-color: var(--bs-success);
+    border-color: var(--bs-success);
+}
+
+.bg-greenebony {
+    background-color: var(--green-ebony);
+}
+
+body {
+    /* background-color: var(--khaki-lightkhaki); */
+}
+
+#nugget {
+    padding: .5rem;
+    border-radius: .25rem;
+    border: solid 1px #909090;
+}
+
 div {
     padding: 1px;
-    border: solid 1px #909090
+    border-radius: 1rem;
+    background-color: transparent;
+}
+
+.card {
+    background-color: transparent;
+    border-radius: .75rem;
+    border: solid 1px #909090;
 }
 
 .candidate-word {
@@ -36,6 +75,10 @@ div {
     padding: 0rem 0rem;
 }
 
+.deck-card {
+    background-color: var(--khaki-lightkhaki);
+}
+
 .hypernym-box>ul {
     padding-left: .75rem;
     margin-block-start: 0.5em;
@@ -45,4 +88,14 @@ div {
 
 li.fakeout>i {
     padding-left: .5rem;
+}
+
+.nav-link {
+    color: white;
+}
+
+a {
+    color: #3F4045;
+    text-decoration: none;
+    background-color: none;
 }

@@ -1,21 +1,22 @@
-{% extends "base.html" %} {% block title %} {% endblock %} {% block navigation_buttons %} {% endblock %} {% block nav_message %} {% endblock %} {% block login_status %}{% endblock %} {% block content %}
+{% extends "base.html" %} {% block title %} {% endblock %} {% block navigation_buttons %} {% endblock %} {% block nav_message %} {% endblock %} {% block login_status %}Logged out{% endblock %} {% block content %}
 <div class="flash">
     {% for category, message in get_flashed_messages(with_categories=True) %}
     <div class="alert alert-{{ category }}">{{ message }}</div>
     {% endfor %}
 </div>
-<div class="card wd-75 mx-auto" id="loginprompt">
+<div class="card w-75 mx-auto" id="loginprompt">
     <form method="post">
         {{ form.hidden_tag() }} {% for field in form if field.widget.input_type != 'hidden' %} {% for error in field.errors %}
         <span class="text-danger">{{ error }}</span> {% endfor %} {{ field(placeholder=field.label.text, class="form-control") }} {% endfor %}
-        <button class="btn btn-primary btn-block btn-lg">Log in</button>
-        <a href="/user/signup" class="btn btn-success">New Account</a>
+        <div class="text-center">
+            <button class="btn btn-primary btn-block btn-lg">Log in</button>
+            <a href="/user/signup" class="btn btn-success btn-block btn-lg">New Account</a>
+        </div>
     </form>
 </div>
 <div class="card wd-50 max-auto" id="publiccollections">
 
-</div>
 
-{% endblock %} {% block tailscripts %}
-<script src="https://unpkg.com/axios/dist/axios.js"></script>
-{% endblock %}
+    {% endblock %} {% block tailscripts %}
+    <script src="https://unpkg.com/axios/dist/axios.js"></script>
+    {% endblock %}

@@ -9,7 +9,7 @@
         <div class="h2">My Decks</div>
         {% for deck in g.user.decks %}
 
-        <div class="card col-4">
+        <div class="deck-card card col-4 m-1">
             <a href="/decks/view/{{deck.id}}">
                 <div class="card-body">
                     <div class="h5 mr-2">
@@ -27,7 +27,7 @@
     <div class="row w-50 mx-auto" id="myNuggets">
         <div class="h2">My nuggets</div>
         {% for nugget in g.user.nuggets %}
-        <div class="card col-12">
+        <div class="col-12">
             <a href="/nuggets/view/{{nugget.id}}">
                 <div class="card-body">
                     <h6>{{nugget.truth}}</h6>
@@ -41,7 +41,7 @@
     </div>
 
 </div>
-<div class="card w-25 mx-auto" id="buttons">
+<div class="w-25 mx-auto text-center" id="buttons">
     <a href="/decks/create" class="btn btn-primary btn-block btn-lg my-3" id="createDeck">
         Create New Deck
     </a>
@@ -50,7 +50,8 @@
     </a>
 </div>
 
-<div class="card wd-50 max-auto" id="publiccollections">
+<div class="w-50 mx-auto text-center" id="sharedcollections">
+    <div class="h2">Collaborating Collections</div>
 
 </div>
 

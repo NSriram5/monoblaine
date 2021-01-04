@@ -54,7 +54,7 @@ def entrypage():
     else:
         form = LoginForm()
         if form.validate_on_submit():
-            user = User.authenticate(form.username.data,form.password.data)
+            user = User.authenticate(form.username.data.lower(),form.password.data)
             if user:
                 do_login(user)
                 flash(f"Hello, {user.username}!","success")
@@ -75,7 +75,7 @@ def signup():
     if form.validate_on_submit():
         try:
             user = User.signup(
-                username= form.username.data,
+                username= form.username.data.lower(),
                 password= form.password.data,
                 email= form.email.data
             )
@@ -88,6 +88,56 @@ def signup():
         return redirect('/')
     else:
         return render_template('signup.html',form=form)
+
+@app.route('/logout')
+def logout():
+    """Handle logout of user."""
+    do_logout()
+    flash("You have been successfully logged out","warning")
+    return redirect('/')
+
+@app.route('/decks/<int:deck_id>/nuggets/create',methods=["GET","POST"])
+def seenuggetscreenforspecificdeck(deck_id):
+    if not g.user:
+        flash("You need to create an account to make new nuggets.","danger")
+        return redirect("/")
+    form = CreateNuggetForm()
+    decks = [Deck.query.get(deck_id)]
+    if request.method=="POST":
+        csrf_token = request.json.get("submission",None).get("csrf_token",None)
+        f = {"csrf_token":csrf_token}
+        request.form = f
+        form.csrf_token.data = csrf_token
+    if form.validate_on_submit():
+        submitted_info = request.json.get("submission",None)
+        nugget = Nugget(truth = submitted_info.get("Nugget"), user_id = g.user.id)
+        db.session.add(nugget)
+        db.session.commit()
+        for input_keyword in submitted_info.get("Keywords"):
+            loc = input_keyword.get("loc")
+            if loc == '':
+                loc = None
+            keyword = Keyword(word = input_keyword.get("text"), 
+                                 place_in_sentence = loc,
+                                 instance_count = input_keyword.get("instanceCount"),
+                                 my_nugget = nugget.id)
+            db.session.add(keyword)
+            db.session.commit()
+            for input_fakeout in input_keyword.get("fakeouts"):
+                fakeout = Fakeout(fake_word = input_fakeout.get("text"),
+                                    hypernym = input_fakeout.get("hypernym"),
+                                    relationship = input_fakeout.get("relationship"),
+                                    my_keyword_id = keyword.id)
+                db.session.add(fakeout)
+        db.session.commit()
+        for deck_id in submitted_info.get("Decks",None):
+            deck = Deck.query.get(deck_id)
+            deck.my_nuggets.append(nugget)
+            db.session.commit()
+        flash("You have created a new nugget")
+        return redirect("/")
+    return render_template('/nuggetviewcontrol.html',form=form,nugget=None, decks = decks)
+
 
 @app.route('/nuggets/create',methods=["GET","POST"])
 def seeblanknuggetscreen():

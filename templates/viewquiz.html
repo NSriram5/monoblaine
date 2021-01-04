@@ -1,4 +1,4 @@
-{% extends "base.html" %} {% block title %} {% endblock %} {% block navigation_buttons %} {% endblock %} {% block nav_message %} Welcome {% endblock %} {% block login_status %}Logged in{% endblock %} {% block content %}
+{% extends "loggedin-base.html" %} {% block title %} {% endblock %}{% block content %}
 <div class="flash">
     {% for category, message in get_flashed_messages(with_categories=True) %}
     <div class="alert alert-{{ category }}">{{ message }}</div>
@@ -20,7 +20,8 @@
         <div class="answers">
             {% for answer in question["answer_list"]%} {% set j = loop.index %}
             <input type="radio" name="question-{{i}}" id="{{i}}-{{answer|e}}" value="{{answer|e}}">
-            <label for="{{loop.index}}-{{answer|e}}">{{loop.cycle('A','B','C','D')}}. {{answer|e}}</label>
+            <label for="{{i}}-{{answer|e}}">{{loop.cycle('A','B','C','D')}}. {{answer|e}}</label>
+
             <br> {% endfor %}
             </select>
         </div>

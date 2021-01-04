@@ -1,4 +1,4 @@
-{% extends "base.html" %} {% block title %} {% endblock %} {% block navigation_buttons %} {% endblock %} {% block nav_message %} Welcome {% endblock %} {% block login_status %}Logged in{% endblock %} {% block content %}
+{% extends "loggedin-base.html" %} {% block title %} {% endblock %}{% block content %}
 <div class="d-flex flex-row w-75 mx-auto">
     <div id="nugget" data-id="{{nugget.id}}" class="w-75" contenteditable="">{{nugget.truth}}</div>
     <div id="keywordingpanel" class="w-25">
@@ -38,10 +38,11 @@
 </div>
 <div id="fakeoutpanel" class="mx-5">
     <!-- <input type="text" name="typedNewFakeoutKw" id="typedNewFakeoutKw"> -->
-    <div class="ui-widget">
-        <label for="typedNewFakeoutKw"></label>
+    <div class="ui-widget d-inline">
+        <label for="typedNewFakeoutKw">Replace</label>
         <input class="" type="text" name="typedNewFakeoutKw" id="typedNewFakeoutKw">
     </div>
+    <label for="typedNewFakeoutWd"> with the word or phrase</label>
     <input type="text" name="typedNewFakeoutWd" id="typedNewFakeoutWd">
     <button id="checkAddFakeoutEntry" class="btn btn-primary btn-block btn-lg my-3">
         Add
