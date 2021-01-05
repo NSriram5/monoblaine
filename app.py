@@ -12,7 +12,7 @@ CURR_USER_KEY = "curr_user"
 
 app = Flask(__name__)
 
-app.config['SQLALCHEMY_DATABASE_URI']=(os.environ.get('DATABASE_URL','postgres:///nugget-quizzer'))
+app.config['SQLALCHEMY_DATABASE_URI']=(os.environ.get('DATABASE_URL','postgres:///'))
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_ECHO'] = False
@@ -60,9 +60,7 @@ def entrypage():
                 flash(f"Hello, {user.username}!","success")
                 return redirect("/")
             flash("Invalid credentials.","danger")
-        #Deck.query.filter(Deck.visibility =="public")
         return render_template('home-anon.html',form=form)
-        #return render_template("nuggetcontrol.html")
 
 @app.route('/user/signup',methods=["GET","POST"])
 def signup():
