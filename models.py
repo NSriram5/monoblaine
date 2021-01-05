@@ -2,7 +2,7 @@
 from flask_bcrypt import Bcrypt
 from flask_sqlalchemy import SQLAlchemy
 import requests
-from secrets import wordnik_api_key
+#from secrets import wordnik_api_key
 from cohyponym import read_hypernym_edges, remove_duplicate_hypernyms, read_cohyponym_edges
 
 bcrypt = Bcrypt()
