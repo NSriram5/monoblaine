@@ -12,7 +12,7 @@ CURR_USER_KEY = "curr_user"
 
 app = Flask(__name__)
 
-app.config['SQLALCHEMY_DATABASE_URI']=(os.environ.get('DATABASE_URL','postgres:///monoblaine'))
+app.config['SQLALCHEMY_DATABASE_URI']=(os.environ.get('DATABASE_URL','postgres:///nugget-quizzer'))
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_ECHO'] = False
@@ -246,8 +246,8 @@ def seepopulatednuggetscreen(nugget_id):
                         new_fakeouts.append((input_fakeout.get("text"),input_fakeout.get("hypernym"),input_fakeout.get("relationship")))
                 #Delete fakeouts that are no longer included
                 for t_fakeout in keyword.my_fakeouts:
-
                     if (t_fakeout.fake_word,t_fakeout.hypernym,t_fakeout.relationship) not in new_fakeouts:
+                        import pdb; pdb.set_trace()
                         del_fakeout = Fakeout.query.filter_by(fake_word=t_fakeout.fake_word,hypernym=t_fakeout.hypernym,relationship=t_fakeout.relationship,my_keyword_id=t_fakeout.my_keyword_id).first()
                         db.session.delete(del_fakeout)
                         db.session.commit()
@@ -306,17 +306,20 @@ def view_deck(deck_id):
         flash("Access unauthorized.","danger")
         return redirect("/")
     formadduser = AddUserCollaborator()
-    access_control = "Visitor"
+    access_control = "VISITOR"
     if deck in g.user.decks:
-        access_control = "Admin"
+        access_control = "ADMIN"
     if g.user in deck.my_users:
-        access_control = "Collaborator"
+        access_control = "COLLABORATOR"
     if formadduser.validate_on_submit():
-        collab_user = User.query.filter_by(username=formadduser.username.data.lower()).first()
+        collab_user = User.query.filter_by(username=formadduser.collaborator_username.data.lower()).first()
+        if collab_user == None:
+            flash("The user you have tried to add does not exist","danger")
+            return redirect(f"/decks/view/{deck_id}")
         deck.my_users.append(collab_user)
         db.session.commit()
 
-    return render_template('showdeck.html',deck=deck,form=formadduser, access_control = access_control)
+    return render_template('showdeck.html',user = g.user, deck=deck,form=formadduser, access_control = access_control)
 
 @app.route('/decks/quiz/<int:deck_id>')
 def run_quiz(deck_id):
@@ -343,6 +346,26 @@ def delete_deck(deck_id):
     db.session.commit()
     return redirect(f'/')
 
+@app.route('/decks/<int:deck_id>/collab_user/<int:user_id>/remove',methods=["POST"])
+def remove_collab_user(deck_id,user_id):
+    """Disconnect a user from a deck"""
+    if not g.user:
+        flash("Access unauthorized.","danger")
+        return redirect("/")
+    deck = Deck.query.get(deck_id)
+    if deck.user_id != g.user.id:
+        flash("This is not a deck that you own. You cannot make this change","danger")
+    user = User.query.get(user_id)
+    if user not in deck.my_users:
+        import pdb; pdb.set_trace()
+        flash("This user is not currently collaborating with this deck","danger")    
+    elif user in deck.my_users:
+        deck.my_users.remove(user)
+        db.session.commit()
+        flash(f'{user.username} has been successfully removed from deck collaboration')
+    return redirect(f'decks/view/{deck_id}')
+    
+
 @app.route('/nuggets/<int:nugget_id>/delete',methods=["POST"])
 def delete_nugget(nugget_id):
     """Delete a nugget."""
@@ -358,11 +381,17 @@ def delete_nugget(nugget_id):
     db.session.commit()
     return redirect(f'/')
 
-@app.route("/api/get_decks",methods=["GET"])
+@app.route("/api/get_my_decks",methods=["GET"])
 def get_decks():
-    decks = g.user.decks
-    decks = [{"id":deck.id,"name":deck.name} for deck in decks]
+    collab_decks = g.user.my_decks + g.user.decks
+    decks = [{"id":deck.id,"name":deck.name} for deck in collab_decks]
     return jsonify(decks=decks)
+
+@app.route("/api/get_users/usernames",methods=["GET"])
+def get_usernames():
+    users = User.query.all()
+    usernames = [user.username for user in users]
+    return jsonify(usernames=usernames)
 
 @app.route("/get_fakeout",methods=["POST"])
 def get_fakeout_words():

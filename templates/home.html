@@ -53,7 +53,20 @@
 
 <div class="w-50 mx-auto text-center" id="sharedcollections">
     <div class="h2">Collaborating Collections</div>
-
+    {% for collab_deck in g.user.my_decks %}
+    <div class="deck-card card col-12 m-1">
+        <a href="/decks/view/{{collab_deck.id}}">
+            <div class="card-body">
+                <div class="h5 mr-2">
+                    {{collab_deck.name}}</div>
+                <p>{{collab_deck.description}}</p>
+            </div>
+            <form class="position-absolute top-0 end-0" action="/decks/{{collab_deck.id}}/collab_user/{{g.user.id}}/remove" method="post">
+                <button type="submit" class="btn-close " type="button" aria-label="Close"></button>
+            </form>
+        </a>
+    </div>
+    {% endfor %}
 </div>
 
 {% endblock %} {% block tailscripts %}

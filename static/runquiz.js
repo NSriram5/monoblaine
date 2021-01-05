@@ -20,6 +20,7 @@ function handleCheckAnswer(e) {
     }
     let grade_report = $("<div>").addClass("alert alert-primary").text(`Your score is ${score} out of ${count}`)
     $('#quiz-questions').append(grade_report);
+    $('#checkanswer-btn').prop("disabled", true);
     return;
 }
 

@@ -7,7 +7,7 @@ db.create_all()
 
 db.session.commit()
 
-myself = User.signup(username="artain",
+myself = User.signup(username="testaccount",
                         password="secret",
                         email="artain5@gmail.com")
 deck1 = Deck(name="Washington Facts",description="Facts about the great state of Washington",visibility="Public",user_id=myself.id)

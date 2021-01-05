@@ -26,28 +26,47 @@
             </div>
         </a>
     </div>
-    {% for nugget in deck.my_nuggets %}
+    {% for nugget in deck.my_nuggets %} {% if nugget.user_id == g.user.id or access_control == "ADMIN" %}
     <a href="/nuggets/view/{{nugget.id}}">
         <div class="block border-bottom p-2">
             {{nugget.truth}}</div>
     </a>
-    {% endfor %}
+    {% else %}
+    <div class="block border-bottom p-2">
+        {{nugget.truth}}</div>
+    {% endif %} {% endfor %}
 </div>
-<div class="collaborator-list w-25 mx-auto">
+<div class="collaborator-list w-50 mx-auto text-center">
     <h6>Collaboratoring Users</h6>
     <form class="w-100" method="post" id="addcollab_user">
         {{ form.hidden_tag() }} {% for field in form if field.widget.input_type != 'hidden' %} {% for error in field.errors %}
-        <span class="text-danger">{{error}}</span> {% endfor %} {{ field (placeholder=field.label.text, class="form-control w-50 d-inline") }} {% endfor %}
+        <span class="text-danger">{{error}}</span> {% endfor %}
+        <div class="ui-widget d-inline">
+            {{ field (placeholder=field.label.text, class="form-control w-50 d-inline") }}
+        </div>
+        {% endfor %}
+
         <div class="d-inline">
             <button class="btn btn-success" type="submit">Attach User</button>
         </div>
     </form>
-    {% for user in deck.my_users %}
-    <p>{{user.username}}</p>
+    {% for collab_user in deck.my_users %}
+    <div class="collaborating-user d-block">
+        <div class="p d-inline">
+            {{collab_user.username}}
+        </div>
+        {% if access_control == "ADMIN" or collab_user.id == user.id %}
+        <form class="d-inline" action="/decks/{{deck.id}}/collab_user/{{collab_user.id}}/remove" method="post">
+            <button type="submit" class="btn-close " type="button" aria-label="Close"></button>
+        </form>
+        {% endif %}
+
+    </div>
+    <p></p>
     {% endfor %}
 </div>
 
 {% endblock %} {% block tailscripts %}
 <script src="https://unpkg.com/axios/dist/axios.js"></script>
-
+<script src="/static/deckview.js"></script>
 {% endblock %}

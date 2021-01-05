@@ -31,7 +31,7 @@ function digestNugget() {
 
 async function loadDeckChoices() {
     let choices = [];
-    let response = await axios.get("/api/get_decks");
+    let response = await axios.get("/api/get_my_decks");
     $.each(response.data.decks, function(i, item) {
         $('#targetDeck').prepend($('<option>', { value: item.id, text: item.name }));
     });

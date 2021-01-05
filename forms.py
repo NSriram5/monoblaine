@@ -24,4 +24,4 @@ class CreateNuggetForm(FlaskForm):
 
 class AddUserCollaborator(FlaskForm):
     """Form for adding users to collaborate on a deck"""
-    username = StringField('Username',validators=[DataRequired()])
+    collaborator_username = StringField('Collaborator Username',validators=[DataRequired()],id="new-collab-user")
