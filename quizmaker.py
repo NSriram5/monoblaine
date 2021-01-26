@@ -91,18 +91,20 @@ def make_fill_in_blank_mc_questions(nugget):
     return questions
 
 def refill_nugget(text,kword,instance_count,place_in_sentence,refill="____"):
-    if instance_count == "All":
-        finished_text = text.replace(kword,refill)
-        finished_text = finished_text.replace(f" a {refill}",f" a/an {refill}")
-        finished_text = finished_text.replace(f" an {refill}",f" a/an {refill}")
-        return finished_text
-    elif instance_count == "1x":
+    if instance_count == "1x":
         rx_wordsplit = re.compile(r'([^\s\(]*\S*[^\s.,\)])|(\)*\W\(*)',re.MULTILINE)
         finished_text = [clump for clump in rx_wordsplit.split(text) if clump]
         if finished_text[place_in_sentence-2] == "a" or finished_text[place_in_sentence-2] == "an":
             finished_text[place_in_sentence-2] = "a/an"
+        elif finished_text[place_in_sentence-2] == "A" or finished_text[place_in_sentence-2] == "An":
+            finished_text[place_in_sentence-2] = "A/An"
         finished_text[place_in_sentence] = f"{refill}"
         finished_text = "".join(finished_text)
         return finished_text
     else:
-        raise RuntimeError
+        finished_text = text.replace(kword,refill)
+        finished_text = finished_text.replace(f" a {refill}",f" a/an {refill}")
+        finished_text = finished_text.replace(f" A {refill}",f" A/An {refill}")
+        finished_text = finished_text.replace(f" an {refill}",f" a/an {refill}")
+        finished_text = finished_text.replace(f" An {refill}",f" A/An {refill}")
+        return finished_text

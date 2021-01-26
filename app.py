@@ -12,7 +12,7 @@ CURR_USER_KEY = "curr_user"
 
 app = Flask(__name__)
 
-app.config['SQLALCHEMY_DATABASE_URI']=(os.environ.get('DATABASE_URL','postgres:///'))
+app.config['SQLALCHEMY_DATABASE_URI']=(os.environ.get('DATABASE_URL','postgres:///monoblaine'))
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_ECHO'] = False
@@ -60,7 +60,22 @@ def entrypage():
                 flash(f"Hello, {user.username}!","success")
                 return redirect("/")
             flash("Invalid credentials.","danger")
-        return render_template('home-anon.html',form=form)
+    return render_template('home-anon.html',form=form)
+
+@app.route("/user/guest",methods=["GET"])
+def make_me_guest():
+    """Sign the user in as the guest/test account
+    """
+    if g.user:
+        return redirect('/')
+    else:
+        user = User.authenticate('guest','guestPassword123')
+        if user:
+            do_login(user)
+            flash(f"You are signed into the guest account. Please be try to avoid deleting data you didn't create","warning")
+            return redirect("/")
+        flash("Invalid credentials.","danger")
+    return redirect('/')
 
 @app.route('/user/signup',methods=["GET","POST"])
 def signup():
@@ -112,21 +127,8 @@ def seenuggetscreenforspecificdeck(deck_id):
         db.session.add(nugget)
         db.session.commit()
         for input_keyword in submitted_info.get("Keywords"):
-            loc = input_keyword.get("loc")
-            if loc == '':
-                loc = None
-            keyword = Keyword(word = input_keyword.get("text"), 
-                                 place_in_sentence = loc,
-                                 instance_count = input_keyword.get("instanceCount"),
-                                 my_nugget = nugget.id)
-            db.session.add(keyword)
-            db.session.commit()
-            for input_fakeout in input_keyword.get("fakeouts"):
-                fakeout = Fakeout(fake_word = input_fakeout.get("text"),
-                                    hypernym = input_fakeout.get("hypernym"),
-                                    relationship = input_fakeout.get("relationship"),
-                                    my_keyword_id = keyword.id)
-                db.session.add(fakeout)
+            keyword = Keyword.create_with_fakeouts(input_keyword,nugget.id)
+        #seems like an unnecessary db commit
         db.session.commit()
         for deck_id in submitted_info.get("Decks",None):
             deck = Deck.query.get(deck_id)
@@ -150,25 +152,12 @@ def seeblanknuggetscreen():
         form.csrf_token.data = csrf_token
     if form.validate_on_submit():
         submitted_info = request.json.get("submission",None)
-        nugget = Nugget(truth = submitted_info.get("Nugget"), user_id = g.user.id)
+        nugget = Nugget(truth = submitted_info.get("truth"), user_id = g.user.id)
         db.session.add(nugget)
         db.session.commit()
-        for input_keyword in submitted_info.get("Keywords"):
-            loc = input_keyword.get("loc")
-            if loc == '':
-                loc = None
-            keyword = Keyword(word = input_keyword.get("text"), 
-                                 place_in_sentence = loc,
-                                 instance_count = input_keyword.get("instanceCount"),
-                                 my_nugget = nugget.id)
-            db.session.add(keyword)
-            db.session.commit()
-            for input_fakeout in input_keyword.get("fakeouts"):
-                fakeout = Fakeout(fake_word = input_fakeout.get("text"),
-                                    hypernym = input_fakeout.get("hypernym"),
-                                    relationship = input_fakeout.get("relationship"),
-                                    my_keyword_id = keyword.id)
-                db.session.add(fakeout)
+        for input_keyword in submitted_info.get("keywords"):
+            keyword = Keyword.create_with_fakeouts(input_keyword,nugget.id)
+        #seems like an unnecessary db commit
         db.session.commit()
         for deck_id in submitted_info.get("Decks",None):
             deck = Deck.query.get(deck_id)
@@ -176,7 +165,7 @@ def seeblanknuggetscreen():
             db.session.commit()
         flash("You have created a new nugget")
         return redirect("/")
-    return render_template('/nuggetviewcontrol.html',form=form,nugget=None, decks = None)
+    return render_template('/nuggetviewcontrol.html',form=form,nugget=None, decks = None,nugget_dict = {})
     #return render_template('nuggetenter.html',form=form)
 
 @app.route('/nuggets/view/<int:nugget_id>',methods=["GET","POST"])
@@ -191,91 +180,14 @@ def seepopulatednuggetscreen(nugget_id):
         f = {"csrf_token":csrf_token}
         request.form = f
         form.csrf_token.data = csrf_token
-    if form.validate_on_submit():
+    if form.validate_on_submit():               
         submitted_info = request.json.get("submission",None)
-        nugget.truth = submitted_info.get("Nugget")
-        old_keywords = [(w.word,w.place_in_sentence) for w in nugget.my_keywords]
-        new_keywords = []
-        for input_keyword in submitted_info.get("Keywords"):
-            loc = input_keyword.get("loc")
-            if loc == 'None' or loc == '':
-                loc = None
-            else:
-                loc = int(loc)
-            if not ((input_keyword.get("text"),loc) in old_keywords):
-                if loc == None:
-                    keyword = Keyword(word = input_keyword.get("text"), 
-                                 instance_count = input_keyword.get("instanceCount"),
-                                 my_nugget = nugget.id)
-                else:
-                    keyword = Keyword(word = input_keyword.get("text"), 
-                                    place_in_sentence = loc,
-                                    instance_count = input_keyword.get("instanceCount"),
-                                    my_nugget = nugget.id)
-                new_keywords.append((keyword.word,keyword.place_in_sentence))
-                db.session.add(keyword)
-                db.session.commit()
-                for input_fakeout in input_keyword.get("fakeouts"):
-                    fakeout = Fakeout(fake_word = input_fakeout.get("text"),
-                                            hypernym = input_fakeout.get("hypernym"),
-                                            relationship = input_fakeout.get("relationship"),
-                                            my_keyword_id = keyword.id)
-                    db.session.add(fakeout)
-                    db.session.commit()
-            else:
-                if loc == None:
-                    keyword = Keyword.query.filter_by(word = input_keyword.get("text"),instance_count = input_keyword.get("instanceCount")).first()
-                else:    
-                    keyword = Keyword.query.filter_by(word = input_keyword.get("text"),place_in_sentence = int(loc)).first()
-                new_keywords.append((keyword.word,keyword.place_in_sentence))
-                old_fakeouts = [(w.fake_word,w.hypernym,w.relationship) for w in keyword.my_fakeouts]
-                new_fakeouts = []
-                #Add new fakeouts
-                for input_fakeout in input_keyword.get("fakeouts"):
-                    if not ((input_fakeout.get("text"),input_fakeout.get("hypernym"),input_fakeout.get("relationship")) in old_fakeouts):
-                        fakeout = Fakeout(fake_word = input_fakeout.get("text"),
-                                            hypernym = input_fakeout.get("hypernym"),
-                                            relationship = input_fakeout.get("relationship"),
-                                            my_keyword_id = keyword.id)
-                        new_fakeouts.append((fakeout.fake_word,fakeout.hypernym,fakeout.relationship))
-                        db.session.add(fakeout)
-                        db.session.commit()
-                    else:
-                        new_fakeouts.append((input_fakeout.get("text"),input_fakeout.get("hypernym"),input_fakeout.get("relationship")))
-                #Delete fakeouts that are no longer included
-                for t_fakeout in keyword.my_fakeouts:
-                    if (t_fakeout.fake_word,t_fakeout.hypernym,t_fakeout.relationship) not in new_fakeouts:
-                        import pdb; pdb.set_trace()
-                        del_fakeout = Fakeout.query.filter_by(fake_word=t_fakeout.fake_word,hypernym=t_fakeout.hypernym,relationship=t_fakeout.relationship,my_keyword_id=t_fakeout.my_keyword_id).first()
-                        db.session.delete(del_fakeout)
-                        db.session.commit()
-        #Delete keywords that are no longer included
-        
-        for t_keyword in nugget.my_keywords:
-            if (t_keyword.word,t_keyword.place_in_sentence) not in new_keywords:
-                del_keyword = Keyword.query.filter_by(word=t_keyword.word,place_in_sentence=t_keyword.place_in_sentence,my_nugget=t_keyword.my_nugget).first()
-                db.session.delete(del_keyword)
-                db.session.commit()
-        #Update decks that this nugget is subscribed to
-        old_deck_ids = [deck.id for deck in nugget.my_decks]
-        new_deck_ids = []
-        for deck_id in submitted_info.get("Decks",None):
-            if deck_id not in old_deck_ids:
-                deck = Deck.query.get(deck_id)
-                nugget.my_decks.append(deck)
-                db.session.commit()
-                new_deck_ids.append(int(deck_id))
-            else:
-                new_deck_ids.append()
-        for t_deck_id in old_deck_ids:
-            if t_deck_id not in new_deck_ids:
-                del_deck = Deck.query.get(t_deck_id)
-                nugget.my_decks.remove(del_deck)
-                db.session.commit()
+        nugget.update(submitted_info)
+
         flash("You have updated a nugget")
         return redirect("/")
     
-    return render_template('/nuggetviewcontrol.html',nugget=nugget,form=form, decks = nugget.my_decks)
+    return render_template('/nuggetviewcontrol.html',nugget=nugget,form=form, decks = nugget.my_decks,nugget_dict = nugget.to_dict())
 
 @app.route('/decks/create',methods=["GET","POST"])
 def create_deck():
@@ -355,7 +267,6 @@ def remove_collab_user(deck_id,user_id):
         flash("This is not a deck that you own. You cannot make this change","danger")
     user = User.query.get(user_id)
     if user not in deck.my_users:
-        import pdb; pdb.set_trace()
         flash("This user is not currently collaborating with this deck","danger")    
     elif user in deck.my_users:
         deck.my_users.remove(user)

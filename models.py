@@ -1,4 +1,4 @@
-"""SQLAlchemy model for MonoBlaine"""
+"""SQLAlchemy model for nugget-quizzer"""
 from flask_bcrypt import Bcrypt
 from flask_sqlalchemy import SQLAlchemy
 import requests
@@ -22,6 +22,54 @@ class Nugget(db.Model):
     user_id = db.Column(db.Integer,db.ForeignKey('users.id',ondelete='CASCADE'),nullable=False)
     my_keywords = db.relationship('Keyword',backref='nugget')
 
+    def to_dict(self):
+        nug_dict = {"id":self.id,
+                    "truth":self.truth,
+                    "user_id":self.user_id,
+                    "keywords":[]}
+        nug_dict["keywords"]=[keyword.to_dict() for keyword in self.my_keywords]
+        return nug_dict
+
+    def update(self,json_new):
+        ## list of old ids
+        old_ids = [keyword.id for keyword in self.my_keywords]
+        ## list of new ids
+        new_ids = []
+        for json_keyword in json_new.get("keywords"):
+            if int(json_keyword.get("id")) in old_ids:
+                new_ids.append(json_keyword.get("id"))
+                keyword = Keyword.query.get(json_keyword.get("id"))
+                keyword.update(json_keyword,self.id)
+            if json_keyword.get("id",None) == None:
+                keyword = Keyword.create_with_fakeouts(json_keyword,self.id)
+                new_ids.append(keyword.id)
+        for old_id in old_ids:
+            if old_id not in new_ids:
+                keyword = Keyword.query.get("old_id")
+                db.session.delete(keyword)
+                db.session.commit()
+        
+        self.truth = json_new.get("truth")
+        self.user_id = json_new.get("user_id")
+        old_deck_ids = [deck.id for deck in self.my_decks]
+        new_deck_ids = []
+        for deck_id in json_new.get("Decks",None):
+            if deck_id not in old_deck_ids:
+                deck = Deck.query.get(deck_id)
+                self.my_decks.append(deck)
+                db.session.commit()
+                new_deck_ids.append(int(deck_id))
+            else:
+                new_deck_ids.append()
+        for test_deck_id in old_deck_ids:
+            if test_deck_id not in new_deck_ids:
+                del_deck = Deck.query.get(test_deck_id)
+                self.my_decks.remove(del_deck)
+                db.session.commit()
+        db.session.commit()
+        return
+        
+
 
 class Keyword(db.Model):
     """Keywords attached"""
@@ -35,6 +83,66 @@ class Keyword(db.Model):
     my_nugget = db.Column(db.Integer,db.ForeignKey('nugget.id',ondelete='cascade'))
     my_fakeouts = db.relationship('Fakeout')
 
+    @classmethod
+    def create_with_fakeouts(cls,json_new,nugg_id):
+        loc = json_new.get("loc")
+        if loc == "":
+            loc = None
+        keyword = Keyword(word = json_new.get("word"),
+                            place_in_sentence = loc,
+                            instance_count = json_new.get("instanceCount"),
+                            part_of_speech = json_new.get("part_of_speech"),
+                            my_nugget = nugg_id)
+        db.session.add(keyword)
+        db.session.commit()
+        for input_fakeout in json_new.get("fakeouts"):
+            Fakeout.create(input_fakeout,keyword.id)
+        return keyword
+
+    def to_dict(self):
+        kword_dict = {"id":self.id,
+                "word":self.word,
+                "loc":self.place_in_sentence,
+                "instance_count":self.instance_count,
+                "part_of_speech":self.part_of_speech,
+                "hypernym":self.hypernym,
+                "fakeouts":[]}
+        kword_dict["fakeouts"]=[fakeout.to_dict() for fakeout in self.my_fakeouts]
+        return kword_dict
+
+    def update(self,json_new,nug_id):
+        
+        ## list of old ids
+        old_ids = [fakeout.id for fakeout in self.my_fakeouts]
+        ## list of new ids
+        new_ids = []
+        for json_fakeout in json_new.get("fakeouts"):
+            if json_fakeout.get("id") in old_ids:
+                new_ids.append(json_fakeout.get("id"))
+                fakeout = Fakeout.query.get(json_fakeout.get("id"))
+                fakeout = fakeout.update(json_fakeout)
+            if json_fakeout.get("id",None) == None:
+                fakeout = Fakeout.create(json_fakeout,self.id)
+                new_ids.append(fakeout.id)
+        for old_id in old_ids:
+            if old_id not in new_ids:
+                fakeout = Fakeout.query.get(old_id)
+                db.session.delete(fakeout)
+                db.session.commit()
+        
+        self.word=json_new.get("word")
+        self.my_nugget = nug_id
+        if json_new.get("loc") != "" and json_new.get("loc") != None:
+            self.place_in_sentence = int(json_new.get("loc"))
+        if json_new.get("instanceCount") != "" and json_new.get("instanceCount") != None:
+            self.instance_count=json_new.get("instanceCount")
+        if json_new.get("part_of_speech") != "" and json_new.get("part_of_speech") != None:
+            self.part_of_speech=json_new.get("part_of_speech")
+        db.session.commit()
+        return
+        
+
+
 class Fakeout(db.Model):
     """Fasqlkeout words"""
     __tablename__="fakeout"
@@ -44,6 +152,36 @@ class Fakeout(db.Model):
     relationship = db.Column(db.String(20),nullable=True)
     my_keyword_id = db.Column(db.Integer,db.ForeignKey('keyword.id',ondelete='cascade'))
     my_keyword = db.relationship('Keyword')
+
+
+
+    @classmethod
+    def create(cls,json_new,kw_id):
+        fakeout = Fakeout(fake_word = json_new.get("fakeWord"),
+                    hypernym = json_new.get("hypernym"),
+                    relationship = json_new.get("relationship"),
+                    my_keyword_id = kw_id)
+        db.session.add(fakeout)
+        db.session.commit()
+        return fakeout
+
+
+    def __eq__(self,obj):
+        return bool(self.id==obj.id)
+
+    def update(self,json_update):
+        self.fake_word = json_update.get("fakeWord")
+        self.hypernym = json_update.get("hypernym")
+        self.relationship = json_update.get("relationship")
+        db.session.commit()
+        return self
+
+    def to_dict(self):
+        fakeout_dict = {"id":self.id,
+                        "fake_word":self.fake_word,
+                        "hypernym":self.hypernym,
+                        "relationship":self.relationship}
+        return fakeout_dict
 
 class Question(db.Model):
     """Questions"""
@@ -143,7 +281,6 @@ class User(db.Model):
 
         If can't find matching user (or if password is wrong), returns False.
         """
-
         user = cls.query.filter_by(username=username).first()
 
         if user:

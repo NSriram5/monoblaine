@@ -1,80 +1,75 @@
 {% extends "loggedin-base.html" %} {% block title %} {% endblock %}{% block content %}
-<div class="d-flex flex-row w-75 mx-auto">
-    <div id="nugget" data-id="{{nugget.id}}" class="w-75" contenteditable="">{{nugget.truth}}</div>
-    <div id="keywordingpanel" class="w-25">
-        <div id="manualKwEntry">
-            <div class="ui-widget">
-                <label for="kwEntry"></label>
-                <input class="" type="text" name="kwEntry" id="kwEntry">
-            </div>
-            <button id="checkAddKwEntry" class="btn btn-primary btn-block btn-lg my-3">
-            Add
-        </button>
-            <span id="errKwEntry">
-
-        </span>
-        </div>
-        <div id="KwList">
-            {% for keyword in nugget.my_keywords %}
-            <span class="validKeyword badge bg-secondary">
-                <span class="wordContent">{{keyword.word}}</span>
-            <button class="btn-close btn-close-white" type="button" aria-label="Close"></button>
-            <span class="partOfSpeech"></span> {% if keyword.place_in_sentence %}
-            <span class="instanceCount ms-2" data-loc="{{keyword.place_in_sentence}}">{{keyword.instance_count}}</span> {% else %}
-            <span class="instanceCount ms-2" data-loc="">{{keyword.instance_count}}</span> {% endif %}
-            </span>
-            {% endfor %}
-        </div>
-    </div>
-    <div id="hypernympanel">
-    </div>
-</div>
-<div id="suggestionspanel" class="mx-5">
-    <button id="suggestionsRefreshAll" class="btn btn-primary btn-block btn-lg my-3">
-        Suggest replacement words
-    </button>
-    <div class="row w=100" id="fakeout-suggestions">
-
-    </div>
-</div>
-<div id="fakeoutpanel" class="mx-5">
-    <!-- <input type="text" name="typedNewFakeoutKw" id="typedNewFakeoutKw"> -->
-    <div class="ui-widget d-inline">
-        <label for="typedNewFakeoutKw">Replace</label>
-        <input class="" type="text" name="typedNewFakeoutKw" id="typedNewFakeoutKw">
-    </div>
-    <label for="typedNewFakeoutWd"> with the word or phrase</label>
-    <input type="text" name="typedNewFakeoutWd" id="typedNewFakeoutWd">
-    <button id="checkAddFakeoutEntry" class="btn btn-primary btn-block btn-lg my-3">
-        Add
-    </button>
-    <span id="errFakeoutEntry">
-
-    </span>
-    <div id="finalizedfakeouts" class="row w-100">
-        {% for keyword in nugget.my_keywords %} {% for fakeout in keyword.my_fakeouts %} {% if keyword.place_in_sentence%} {% set loc = keyword.place_in_sentence %} {% else %} {% set loc = "" %} {% endif %} {% if fakeout.hypernym %}
-        <div class="finishedFakeout card col-2" data-keyword="{{keyword.word}}" data-fakeoutword="{{fakeout.fake_word}}" data-loc="{{loc}}" data-hypernym="{{fakeout.hypernym}}" data-instancescount="{{keyword.instance_count}}" data-relationship="{{fakeout.relationship}}">
-            <div class="card-body">
-                <div class="card-text mb-0 mr-2">Replace {{keyword.word}} with {{fakeout.fake_word}}</div>
-                <div class="card-text mb-0">Shared concept is {{fakeout.hypernym}}</div>
-                <div class="card-text mb-0">{{keyword.instance_count}}</div>
-                <div class="card-text mb-0">Shared relationship: {{fakeout.relationship}}</div>
-            </div><button class="btn-close position-absolute top-0 end-0" type="button" aria-label="Close"></button></div>
+    <script type="text/javascript">
+        {% if nugget_dict %}
+        let nugget_var = {{nugget_dict | tojson }}
         {% else %}
-        <div class="finishedFakeout card col-2" data-keyword="{{keyword.word}}" data-fakeoutword="{{fakeout.fake_word}}" data-loc="{{loc}}" data-hypernym="" data-instancescount="{{keyword.instance_count}}" data-relationship="">
-            <div class="card-body">
-                <p class="card-text mb-0">Replace {{keyword.word}} with {{fakeout.fake_word}}</p>
-                <p class="card-text mb-0">{{keyword.instance_count}}</p>
-            </div><button class="btn-close position-absolute top-0 end-0" type="button" aria-label="Close"></button></div>
+        let nugget_var = null;
+        {% endif %}
+    </script>
 
-        {% endif %} {% endfor %} {% endfor %}
+<div style="display:none; visibility: hidden" id="data-handoff">
+    {% for keyword in nugget.my_keywords %} {% if keyword.place_in_sentence%} {% set loc = keyword.place_in_sentence %} {% else %} {% set loc = "" %}{% endif %}
+    <div class="keyword" data-keyword="{{keyword.word}}" data-loc="{{loc}}" data-instancescount="{{keyword.instance_count}}" ,data-partOfSpeech="{{keyword.partOfSpeech}}" data-id="{{keyword.id}}">
+        {% for fakeout in keyword.my_fakeouts %} {% if fakeout.hypernym %}
+        <div class="fakeout" data-fakeoutword="{{fakeout.fake_word}}" data-hypernym="{{fakeout.hypernym}}" data-relationship="{{fakeout.relationship}}" data-id="{{fakeout.id}}">
+        </div>
 
+        {% else %}
+        <div class="fakeout" data-fakeoutword="{{fakeout.fake_word}}" data-hypernym="" data-relationship="{{fakeout.relationship}}" data-id="{{fakeout.id}}">
+        </div>
+
+        {% endif %} {% endfor %} 
+    </div>{% endfor %}
+</div>
+<div class="d-flex flex-wrap flex-row m-4">
+    <div class="h5 w-25 inline">Enter a nugget of truth <br>then choose words to replace
     </div>
-    <button id="exampleQuestions" class="btn btn-primary btn-block btn-lg my-3">See Example Questions</button>
+    <div id="nugget" class="w-75 inline" contenteditable="">{{nugget.truth}}</div>
+    <div class="w-50 mx-auto nugget-err"></div>
 </div>
-<div id="questions" class="w-75 mx-auto">
+
+
+<div id="distractionpanel">
+    <div class="ui-widget">
+        <div class="d-flex flex-row m-4">
+            <div class="h5 w-25 inline">Enter a keyword you want to change here
+            </div>
+            <label for="kwEntry"></label>
+            <input class="w-50" type="text" name="kwEntry" id="kwEntry">
+            <span id="errKwEntry"></span>
+            <button id="checkAddKeywordEntry" class="btn btn-primary btn-block btn-lg my-3">Add</button>
+        </div>
+    </div>
+    
+    <div id="chosen-keywords" class="row border-top border-bottom">
+        {% for keyword in nugget.my_keywords%}
+        <div class="card-body col-3 mx-3 position-relative border-right border-left border-primary text-center" data-keyword={{keyword.word}}>
+            <div class="card-text mb-0 mr-1 text-center validKeyword">{{keyword.word}}</div>
+            <button class="deleteKeyword btn-close position-absolute top-0 end-0" type="button" aria-label="Close"></button>
+            <span class="badge bg-secondary partOfSpeech">{{keyword.part_of_speech}}</span>
+            <span class="badge bg-secondary instanceCount">{{keyword.instance_count}}</span>
+            <div class="fakeouts">{% for fakeout in keyword.my_fakeouts %}
+                <span class="fakeout bg-success my-2 mr-1 d-block" data-fakeout = "{{fakeout.fake_word}}">
+                    {{fakeout.fake_word}}
+                    <span><button class="btn-close btn-close-white deleteFakeout" type="button" aria-label="Close"></button>
+                    </span>
+
+                </span>
+            {% endfor %}
+
+                <div class="ui-widget d-inline">
+                    <label for="fakeoutEntry-{{keyword.word}}">Enter a new replacement word here</label><br>
+                    <input type="text" name="fakeoutEntry-{{keyword.word}}" id="fakeoutEntry-{{keyword.word}}" class="typedFakeEntry">
+                </div>
+                <button class="btn btn-success d-inline addFakeout">Add</button>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
 
 </div>
+
+
 
 <div id="statistics" class="w-75 mx-auto">
 
@@ -103,5 +98,6 @@
 
 {% endblock %} {% block tailscripts %}
 <script src="https://unpkg.com/axios/dist/axios.js"></script>
+<script src="/static/classes.js"></script>
 <script src="/static/nuggetcontrol.js"></script>
 {% endblock %}

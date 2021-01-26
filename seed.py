@@ -10,6 +10,9 @@ db.session.commit()
 myself = User.signup(username="testaccount",
                         password="secret",
                         email="artain5@gmail.com")
+guest = User.signup(username="guest",
+                        password="guestPassword123",
+                        email="Nikhil.sriram5@gmail.com")                    
 deck1 = Deck(name="Washington Facts",description="Facts about the great state of Washington",visibility="Public",user_id=myself.id)
 deck2 = Deck(name="Tennessee Facts",description="Facts about the great state of Tennessee",visibility="Private",user_id=myself.id)
 deck3 = Deck(name="Kansas Facts",description="Facts about the great state of Kansas",visibility="Public",user_id=myself.id)

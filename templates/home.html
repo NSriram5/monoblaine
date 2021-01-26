@@ -5,14 +5,14 @@
     {% endfor %}
 </div>
 <div class="d-flex flex-row mx-5">
-    <div class="row w-50 mx-auto" id="myDecks">
+    <div class="w-50 mx-auto" id="myDecks">
         <div class="h2">My Decks</div>
         {% for deck in g.user.decks %}
 
         <div class="deck-card card col-4 m-1">
             <a href="/decks/view/{{deck.id}}">
                 <div class="card-body">
-                    <div class="h5 mr-2">
+                    <div class="h5 me-4">
                         {{deck.name}}</div>
                     <p>{{deck.description}}</p>
                 </div>
@@ -24,7 +24,7 @@
         {% endfor %}
     </div>
 
-    <div class="row w-50 mx-auto" id="myNuggets">
+    <div class="w-50 mx-auto" id="myNuggets">
         <div class="h2">My nuggets</div>
         {% for nugget in g.user.nuggets %}
         <div class="col-12">

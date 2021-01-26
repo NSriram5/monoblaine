@@ -2,12 +2,41 @@
 const separateWordsRegEx = /([^\s\(]*\S*[^\s.,\)])|(\)*\W\(*)/gm;
 const wordMatchRegEx = /(\w|'|-)+/;
 
+let globalNugget;
 
+
+function digestRawData() {
+    if (nugget_var != null && nugget_var.truth != null) {
+        globalNugget = new Nugget(nugget_var.truth,
+            nugget_var.user_id, [],
+            nugget_var.id);
+        for (kword_var of nugget_var.keywords) {
+            let keyword = new Keyword(kword_var.word,
+                kword_var.loc,
+                kword_var.instance_count,
+                kword_var.part_of_speech, [], [],
+                kword_var.id);
+            for (fakeout_var of kword_var.fakeouts) {
+                let fakeout = new Fakeout(fakeout_var.fake_word,
+                    fakeout_var.hypernym,
+                    fakeout_var.relationship,
+                    fakeout_var.id);
+                keyword.fakeouts.push(fakeout);
+                keyword.hypernyms.push(fakeout_var.hypernym)
+            }
+            globalNugget.keywords.push(keyword);
+        }
+    }
+}
+
+/** 
+ * 
+ */
 function digestNugget() {
-    let nugget = $("#nugget").text();
+    $(".nugget-err").text("");
+    let nugget_text = $("#nugget").text();
     $('#nugget').html("");
-    sessionStorage.setItem("nugget", nugget);
-    let wordArray = nugget.match(separateWordsRegEx);
+    let wordArray = nugget_text.match(separateWordsRegEx);
     let clumpNum = 0;
     let candidateWords = [];
     if (wordArray) {
@@ -23,9 +52,31 @@ function digestNugget() {
             clumpNum++;
         }
     }
-    sessionStorage.setItem("candidateWords", candidateWords);
+
+    //update global variable of Nugget
+    if (globalNugget == null) {
+        globalNugget = new Nugget(nugget_text);
+    } else {
+        globalNugget.truth = nugget_text
+        let updatedKeywords = []
+        for (keyword of globalNugget.keywords) {
+            if (checkIfWordInNugget(keyword.word)) {
+                updatedKeywords.push(keyword);
+            }
+        }
+        globalNugget.keywords = updatedKeywords;
+    }
+
+    //load new suggestions into autocomplete
     $("#kwEntry").autocomplete({ source: candidateWords });
-    $("#typedNewFakeoutKw").autocomplete({ source: candidateWords });
+
+    //update the UI panels. Delete any that aren't relevant anymore
+    $(".validKeyword").toArray().forEach((elem) => {
+        if (!checkIfWordInNugget($(elem).text()) && $(elem).text() != "") {
+            $(elem).parentElement.remove();
+        }
+    })
+
     return;
 }
 
@@ -37,6 +88,12 @@ async function loadDeckChoices() {
     });
 }
 
+
+/** 
+ *FUNCTIONS TO ADD A NEW KEYWORD TO THE UI AND THE GLOBAL nugget VARIABLE 
+ */
+
+//helper function
 function checkIfWordInNugget(word) {
     let found = false;
     let placement = "";
@@ -51,140 +108,167 @@ function checkIfWordInNugget(word) {
     } else { return placement; }
 }
 
-function addKeyword() {
+//helper function
+function checkIfKwordInList(word) {
+    return $(".validKeyword").toArray().map(x => x.innerText).includes(word);
+}
+
+function addTypedKeyword() {
     $("#errKwEntry").text("")
     let word = $("#kwEntry").val();
     let found = checkIfWordInNugget(word);
-    let placement = "";
     if (!found) {
         //The word isn't in the nugget
         $("#errKwEntry").text("Keyword does not exist in nugget")
         return;
     }
-    makeAppendKwBadge(word, loc = placement);
+    let placement = found.slice(6);
+    makeAppendKwCard(word, loc = placement);
     $("#kwEntry").val("");
-
-}
-
-function checkIfKwordInList(word) {
-    return $(".validKeyword>.wordContent").toArray().map(x => x.innerText).includes(word);
-}
-
-function makeAppendKwBadge(word, instCountNum = "All", loc = "") {
-    if (checkIfKwordInList(word)) return;
-    let kWordBadge = $("<span>").addClass('validKeyword badge bg-secondary');
-    let kWord = $("<span>").text(word).addClass('wordContent')
-    let delButton = $("<button>").addClass("btn-close btn-close-white").attr({ "type": "button", "aria-label": "Close" });
-    let instCount = $("<span>").addClass('instanceCount ms-2').text(instCountNum).attr("data-loc", loc);
-    let partSpeech = $("<span>").text("").addClass("partOfSpeech");
-    kWordBadge.append(kWord).append(delButton).append(partSpeech).append(instCount);
-    $("#KwList").append(kWordBadge);
-}
-
-async function lookupAllFakeouts() {
-    let searchWords = [];
-    $(".validKeyword").each(function(index) {
-        part = $(this).find(".partOfSpeech").text();
-        word = $(this).find(".wordContent").text();
-        instanceCount = $(this).find(".instanceCount").text();
-        loc = $(this).find(".instanceCount").attr("data-loc");
-        item = { "sWord": word.toLowerCase(), "partOfSpeech": part, "instanceCount": instanceCount, "loc": loc }
-        searchWords.push(item);
-    })
-    for (keyword of searchWords) {
-        let spinDiv = $("<div>").addClass("col-6 spinner-border text-primary m-6").attr("role", "status");
-        let spinSpan = $("<span>").addClass("visually-hidden").text("Loading...");
-        spinDiv.append(spinSpan);
-        $("#fakeout-suggestions").append(spinDiv);
-    }
-    let response = await axios.post("/get_fakeout", json = { "words": searchWords })
-    $("#fakeout-suggestions").empty();
-    let fakeouts = response.data.fakeoutResults;
-    for (keyword of fakeouts) {
-        let label = keyword.text_word;
-        let wordCard = $('<div>').addClass('card col-6').attr('id', `card-${label}`);
-        let cardBody = $('<div>').addClass('card-body');
-        let cardHeader = $('<h3>').addClass('card-title').text(label).attr('data-instancesCount', keyword.instance_count).attr('data-loc', keyword.loc);
-        let listRoot = $("<div>").addClass('d-flex flex-row flex-wrap');
-        let clsButton = $("<button>").addClass("btn-close position-absolute top-0 end-0").attr({ "type": "button", "aria-label": "Close" });
-        for (group of keyword.cohyponyms) {
-            let flexcontainer = $('<div>').addClass('hypernym-box col-4');
-            let hypernymRoot = $('<ul>').addClass('hypernym h6').append($('<u>').text(group.hypernym.label).attr('data-rel', group.hypernym.rel)).append($('<span>').text(group.hypernym.weight).addClass('hypernym-weight mx-2'));
-            flexcontainer.append(hypernymRoot);
-            let i = 0;
-            for (hyponym of group.hyponyms) {
-                if (i >= 5) { break; }
-                let word = hyponym.label;
-                let fakeout = $('<li>').addClass('fakeout').text(word);
-                let add = $('<i>').addClass("far fa-plus-square");
-                hypernymRoot.append(fakeout.append(add));
-                i++;
-            }
-            listRoot.append(flexcontainer);
-        }
-        cardBody.append(cardHeader).append(listRoot);
-        wordCard.append(cardBody).append(clsButton);
-        $('#fakeout-suggestions').append(wordCard);
-    }
 }
 
 function handleNuggetDblclick(e) {
     if (e.target.classList.contains("candidate-word")) {
         let kword = e.target.textContent;
         let loc = e.target.id.slice(6);
-        makeAppendKwBadge(kword, instCountNum = "1x", loc = loc);
+        makeAppendKwCard(kword, instCountNum = "1x", loc = loc);
     }
+}
+
+//adds a new keyword card with replacement word entry
+function makeAppendKwCard(word, instCountNum = "All", loc = "", partOfSpeech = "None") {
+
+    //Update the UI first
+    if (checkIfKwordInList(word)) return;
+    let container = $("<div>").addClass('card-body col-3 mx-3 position-relative border-right border-left border-primary text-center').attr("data-keyword", word);
+    let kwordDiv = $("<div>").addClass('card-text mb-0 mr-1 text-center').text(word);
+    let delButton = $("<button>").addClass("deleteKeyword btn-close position-absolute top-0 end-0").attr({ "type": "button", "aria-label": "Close" });
+    let partOfSpeechBadge = $("<span>").addClass('badge bg-secondary partOfSpeech').append($("<small>").text("part of speech")).text(partOfSpeech);
+    let instanceCountBadge = $("<span>").addClass('badge bg-secondary instanceCount').text(instCountNum);
+    let fakeoutsDiv = $("<div>").addClass("fakeouts")
+    let fakeoutEntryDiv = $("<div>").addClass("ui-widget").append($("<label>").attr("for", `fakeoutEntry-${word}`).text("Enter a new replacement word here")).append($("<br>"))
+    let fakeoutEntryInput = $("<input>").attr("type", "text").attr("name", `fakeoutEntry-${word}`).attr("id", `fakeoutEntry-${word}`)
+    let submitFakeout = $("<button>").addClass("btn btn-success d-inline addFakeout").text("Add")
+    fakeoutEntryDiv.append(fakeoutEntryInput);
+    fakeoutsDiv.append(fakeoutEntryDiv);
+    fakeoutsDiv.append(submitFakeout)
+    container.append(kwordDiv).append(delButton).append(partOfSpeechBadge).append(instanceCountBadge).append(fakeoutsDiv);
+
+    //Update the global variable of nugget
+    let keyword = new Keyword(word, loc, instCountNum, partOfSpeech);
+    globalNugget.keywords.push(keyword);
+    loadFakeoutsIntoAutoComplete(keyword, fakeoutEntryInput);
+
+
+    //Add the finished keyword block into the UI
+    $("#chosen-keywords").append(container);
+
+}
+
+async function loadFakeoutsIntoAutoComplete(keyword, textInput) {
+    let searchWord = {
+        "sWord": keyword.word.toLowerCase(),
+        "partOfSpeech": keyword.partOfSpeech,
+        "instanceCount": keyword.instanceCount,
+        "loc": keyword.placeInSentence
+    };
+    let response = await axios.post("/get_fakeout", json = {
+        "words": [searchWord]
+    }).then(function(data) {
+        let fakeouts = data.data.fakeoutResults[0];
+        let fakeoutsList = [];
+        for (fakeoutGroup of fakeouts.cohyponyms) {
+            let hypernym = fakeoutGroup.hypernym.label;
+            let relationship = fakeoutGroup.hypernym.rel
+            for (fakeout of fakeoutGroup.hyponyms) {
+                let fakeword = fakeout.label
+                let newFakeout = new Fakeout(fakeword, hypernym, relationship);
+                fakeoutsList.push(newFakeout);
+            }
+        }
+        keyword.autocompleteFakeouts = fakeoutsList;
+        textInput.autocomplete({ source: keyword.autocompleteFakeouts.map((elem) => elem.word) });
+    }).catch(function(err) {
+        console.log("An error was encountered");
+        console.log(err);
+    });
 }
 
 function handleAddKwBtn(e) {
     e.preventDefault();
-    addKeyword();
+    addTypedKeyword();
 }
 
-function handleClickAddFakeoutButton(e) {
-    e.preventDefault();
-    addFinishedFakeout();
-}
+function handlekwdkeypress(e) {
 
-function addFinishedFakeout() {
-    let kword = $('#typedNewFakeoutKw').val();
-    let fword = $('#typedNewFakeoutWd').val();
-    if (kword == "" && fword == "") {
-        $('#errFakeoutEntry').text("Both Keyword and replacement word are empty");
-        return;
-    } else if (kword == "") {
-        $('#errFakeoutEntry').text("The Keword can't be empty");
-        return;
-    } else if (fword == "") {
-        $('#errFakeoutEntry').text("The Replacement word can't be empty");
-        return;
-    } else if (!checkIfWordInNugget(kword)) {
-        $('#errFakeoutEntry').text("The entered Keyword can't be found in the nugget");
-        return;
-    } else if (!checkIfKwordInList(kword)) {
-        makeAppendKwBadge(kword);
+    if ((e.which && e.which == 13) || (e.keyCode && e.keyCode == 13)) {
+        e.preventDefault();
+        addTypedKeyword();
     }
-    //$('#typedNewFakeoutKw').val("");
-    $('#typedNewFakeoutWd').val("");
-    let instanceCount = "All";
-    let displayCard = $("<div>").addClass("finishedFakeout card col-2");
-    let cardText = $("<div>").addClass("card-text mb-0 mr-2").text(`Replace ${kword} with ${fword}`);
-    let instances = $("<div>").addClass("card-text mb-0").text(instanceCount);
-    let clsButton = $("<button>").addClass("btn-close position-absolute top-0 end-0").attr({ "type": "button", "aria-label": "Close" });
-    displayCard.append($("<div>").addClass("card-body").append(cardText).append(instances)).append(clsButton);
-    displayCard.attr("data-keyword", kword);
-    displayCard.attr("data-fakeoutword", fword);
-    displayCard.attr("data-hypernym", "");
-    displayCard.attr("data-instancescount", instanceCount);
-    displayCard.attr("data-relationship", "");
-    displayCard.attr("data-loc", "");
-    $("#finalizedfakeouts").append(displayCard);
 }
 
-function handleFakeOutRefreshAllBtn(e) {
-    e.preventDefault();
-    lookupAllFakeouts();
+
+function handleKwdDelPress(e) {
+    if (e.target.tagName == "BUTTON") {
+        let removalKeyword = e.target.parentElement.dataset.keyword
+        globalNugget.keywords = globalNugget.keywords.filter(kword => kword.word != removalKeyword);
+        e.target.parentElement.remove();
+    }
 }
+
+/** 
+ *FUNCTIONS TO ADD A NEW FAKEOUT TO THE UI AND THE GLOBAL nugget VARIABLE 
+ */
+
+//Code to add a fakeout
+function addFakeout(e) {
+    let inputElement = e.target.parentElement.querySelector("input");
+    let fakeoutText = inputElement.value;
+    let keywordText = inputElement.id.slice(13);
+
+    inputElement.value = "";
+    let keyword = globalNugget.keywords.find(elem => elem.word == keywordText);
+    if (keyword == undefined) {
+        console.log("Something's wrong");
+        throw Error("No Keyword??");
+    }
+    let fakeout = keyword.fakeouts.find(elem => elem.word == fakeoutText);
+    if (fakeout == undefined) {
+        //create new fakeout
+        fakeout = new Fakeout(fakeoutText)
+        keyword.fakeouts.push(fakeout);
+    } else {
+        // use existing fakeout
+        keyword.fakeouts.push(fakeout);
+    }
+    let uiElement = $("<span>").addClass("fakeout bg-success my-2 mr-1 d-block").text(fakeoutText).append($("<span>").append($("<button>").addClass("btn-close btn-close-white deleteFakeout").attr("type", "button").attr("aria-label", "Close"))).attr("data-fakeout", fakeoutText);
+    $(inputElement.parentElement).before(uiElement);
+}
+
+function handleFakeoutDelPress(e) {
+    e.preventDefault();
+
+    let fakeoutText = e.target.parentElement.parentElement.dataset.fakeout
+    let keywordText = e.target.parentElement.parentElement.parentElement.parentElement.dataset.keyword;
+
+    //Remove the fakeout from the globalNugget
+    let keyword = globalNugget.keywords.find(elem => elem.word == keywordText);
+    let fakeoutList = keyword.fakeouts.filter(elem => elem.word != fakeoutText);
+    keyword.fakeouts = fakeoutList;
+
+    //Remove the UI element
+    e.target.parentElement.parentElement.remove()
+}
+
+function fkwordKeyPress(e) {
+    if ((e.which && e.which == 13) || (e.keyCode && e.keyCode == 13)) {
+        addFakeout(e);
+    }
+}
+
+/** 
+ *FUNCTIONS TO ADD DETAILS TO THE KEYWORD 
+ */
 
 function handleKwlistclick(e) {
     e.preventDefault();
@@ -226,6 +310,10 @@ function handleKwlistclick(e) {
     }
 }
 
+/** 
+ *FUNCTIONS TO ARRANGE DECK RELATIONSHIPS IN THE UI 
+ */
+
 function handleaddtoDeck(e) {
     e.preventDefault();
     let id = $("#targetDeck").val();
@@ -244,43 +332,48 @@ function handleSavedDecksclick(e) {
     }
 }
 
+
+/** 
+ *PACKAGE UP AND CLOSE
+ */
 async function saveAndClose(e) {
     e.preventDefault();
     token = $('#csrf_token').val()
-    submission = { csrf_token: token, Decks: [], Nugget: $("#nugget").text(), Keywords: [] }
+    if (globalNugget.truth == "") {
+        $(".nugget-err").text("The nugget field cannot be empty to submit");
+        return;
+    }
+
+    submission = { csrf_token: token, Decks: [], truth: globalNugget.truth, user_id: globalNugget.userId, Keywords: [] }
     keywordArray = [];
     fakeoutArray = [];
     $(".deckAdd").each(function(index) {
         submission.Decks.push($(this).attr("id"));
     })
-    $(".finishedFakeout").each(function(index) {
-        let fakeout = $(this).attr("data-fakeoutword");
-        let hypernym = $(this).attr("data-hypernym");
-        let keyword = $(this).attr("data-keyword");
-        let relationship = $(this).attr("data-relationship");
-        let loc = $(this).attr("data-loc");
-        let instanceCount = $(this).attr("data-instancesCount");
-        if (!keywordArray.includes(`${keyword}-${loc}-${instanceCount}`)) {
-            keywordArray.push(`${keyword}-${loc}-${instanceCount}`);
-            let fakeoutData = { text: fakeout, hypernym: hypernym, relationship: relationship }
-            fakeoutArray.push(`${keyword}-${loc}-${instanceCount}-${fakeout}-${hypernym}-${relationship}`)
-            submission.Keywords.push({ text: keyword, loc: loc, instanceCount: instanceCount, fakeouts: [fakeoutData] })
-        } else {
-            if (!fakeoutArray.includes(`${keyword}-${loc}-${instanceCount}-${fakeout}-${hypernym}-${relationship}`)) {
-                let fakeoutData = { text: fakeout, hypernym: hypernym, relationship: relationship };
-                fakeoutArray.push(keyword + loc + instanceCount + fakeout + hypernym + relationship);
-                let index = keywordArray.findIndex((s) => s == `${keyword}-${loc}-${instanceCount}`);
-                submission.Keywords[index].fakeouts.push(fakeoutData);
-            }
+
+    submission.keywords = globalNugget.keywords.map((kwrd) => {
+        return {
+            word: kwrd.word,
+            loc: kwrd.placeInSentence,
+            instanceCount: kwrd.instanceCount,
+            part_of_speech: kwrd.partOfSpeech,
+            id: kwrd.id,
+            fakeoutsuggestions: kwrd.autocompleteFakeouts,
+            fakeouts: kwrd.fakeouts.map((fakeword) => {
+                return {
+                    fakeWord: fakeword.word,
+                    hypernym: fakeword.hypernym,
+                    relationship: fakeword.relationship,
+                    id: fakeword.id
+                }
+            })
         }
-    });
+    })
     let resp;
-    if ($("#nugget").attr("data-id") == "") {
+    if (globalNugget.id == -1) {
         resp = await axios.post("/nuggets/create", json = { "submission": submission });
     } else {
-        let update_id = $("#nugget").attr("data-id");
-        resp = await axios.post(`/nuggets/view/${update_id}`, json = { "submission": submission });
-
+        resp = await axios.post(`/nuggets/view/${globalNugget.id}`, json = { "submission": submission });
     }
 
     if (resp.status == 200) { window.location.replace('/'); } else {
@@ -289,81 +382,56 @@ async function saveAndClose(e) {
     }
 }
 
-function handlefakeoutsuggestionsclick(e) {
-    e.preventDefault(e);
-    if (e.target.tagName == "BUTTON") {
-        e.target.parentElement.remove();
-    } else if (e.target.parentElement.classList.contains("fakeout") || e.target.classList.contains("fakeout")) {
-        let fakeout;
-        let targ;
-        if (e.target.classList.contains("fakeout")) {
-            targ = e.target;
-        } else {
-            targ = e.target.parentElement;
+
+/**
+ * General handler for a user clicking within the keyword fakeout distraction panel 
+ */
+function handleDistractionClick(e) {
+    if (e.target.classList.contains("deleteKeyword")) {
+        handleKwdDelPress(e);
+    } else if (e.target.classList.contains("deleteFakeout")) {
+        handleFakeoutDelPress(e);
+    } else if (e.target.classList.contains("addFakeout")) {
+        addFakeout(e);
+    }
+}
+
+function handleDistractionKeyPress(e) {
+    if ((e.which && e.which == 13) || (e.keyCode && e.keyCode == 13)) {
+        if (e.target.classList.contains("typedFakeEntry")) {
+            addFakeout(e);
         }
-        fakeout = targ.innerText;
-        let hypernym = targ.parentElement.firstElementChild.innerText;
-        let relationship = targ.parentElement.firstElementChild.dataset.rel;
-        let keyword = targ.closest(".card-body").firstElementChild.innerText;
-        let instanceCount = targ.closest(".card-body").firstElementChild.dataset.instancescount;
-        let loc = targ.closest(".card-body").firstElementChild.dataset.loc;
-        let displayCard = $("<div>").addClass("finishedFakeout card col-2");
-        let cardText = $("<div>").addClass("card-text mb-0 mr-2").text(`
-                                Replace ${keyword}
-                                with ${fakeout}
-                                `);
-        let hypernymText = $("<div>").addClass("card-text mb-0").text(`
-                                Shared concept is ${hypernym}
-                                `);
-        let instances = $("<div>").addClass("card-text mb-0").text(instanceCount);
-        let relationText = $("<div>").addClass("card-text mb-0").text(`
-                                Shared relationship: ${relationship}
-                                `);
-        let clsButton = $("<button>").addClass("btn-close position-absolute top-0 end-0").attr({ "type": "button", "aria-label": "Close" });
-        displayCard.append($("<div>").addClass("card-body").append(cardText).append(hypernymText).append(instances).append(relationText)).append(clsButton);
-        displayCard.attr("data-keyword", keyword);
-        displayCard.attr("data-fakeoutword", fakeout);
-        displayCard.attr("data-hypernym", hypernym);
-        displayCard.attr("data-instancescount", instanceCount);
-        displayCard.attr("data-relationship", relationship);
-        displayCard.attr("data-loc", loc);
-        $("#finalizedfakeouts").append(displayCard);
     }
 }
 
-function handleDeleteFinishedFakeout(e) {
-    if (e.target.tagName == "BUTTON") {
-        e.target.parentElement.remove();
-    }
-}
-
-function handlekwdkeypress(e) {
-    //e.preventDefault();
-    if ((e.which && e.which == 13) || (e.keyCode && e.keyCode == 13)) {
-        addKeyword();
-    }
-}
-
-function fkwordKeyPress(e) {
-    if ((e.which && e.which == 13) || (e.keyCode && e.keyCode == 13)) {
-        addFinishedFakeout();
-    }
-}
 
 $(function() {
+    digestRawData();
+
     digestNugget();
+
+
     loadDeckChoices();
+    //Event for when the nugget has just been updated
     $("#nugget").focusout(digestNugget);
-    $("#checkAddKwEntry").click(handleAddKwBtn);
-    $("#checkAddFakeoutEntry").click(handleClickAddFakeoutButton);
+
+    //These events all handle adding a new keyword
+    $("#checkAddKeywordEntry").click(handleAddKwBtn);
+    $("#nugget").dblclick(handleNuggetDblclick);
+
+    //Handles a click or enter-press anywhere within the distractionpanel
+    $("#chosen-keywords").click(handleDistractionClick);
+    $("#chosen-keywords").keypress(handleDistractionKeyPress);
+
+    //These events all handle adding a new fakeout within a keyword
     $("#typedNewFakeoutWd").keypress(fkwordKeyPress);
     $("#kwEntry").keypress(handlekwdkeypress);
-    $("#suggestionsRefreshAll").click(handleFakeOutRefreshAllBtn);
     $("#KwList").click(handleKwlistclick);
-    $("#nugget").dblclick(handleNuggetDblclick);
-    $("#fakeout-suggestions").click(handlefakeoutsuggestionsclick);
-    $("#finalizedfakeouts").click(handleDeleteFinishedFakeout);
+
+    //These events handle adding and removing deck assignment
     $("#addToDeck").click(handleaddtoDeck);
     $("#saveToDecks").click(handleSavedDecksclick);
+
+    // This event saves 
     $("#saveMe").click(saveAndClose)
 })
